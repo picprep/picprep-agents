@@ -153,7 +153,7 @@ yours goes back; what they changed since stays theirs), edit on top, or comment 
 may carry the person's note on why (Reject with a comment, in the change's thread; also in `view what:'notes'`):
 read it before trying again, and do what it says instead of re-sending the same change; answer a comment
 with `propose {replyTo: <change id>, why}` (words, or with a follow-up change); `withdraw` takes back a change they
-have not reviewed. If they paused your edits, a change waits (`held`) for their Apply. Some things stay theirs:
+have not reviewed. They may work at the same time as you: keep going on what they are not touching, and leave what they changed since (`yoursSince`) as theirs. If they paused your edits, a change waits (`held`) for their Apply. Some things stay theirs:
 deleting a project or a post, restoring a version, adding photos, jumping the History, reapplying a kept edit and
 picking marks by contrast are only *offered*; approving or ruling a slide, its note and comment, keeping or
 rejecting your changes, answering your own questions, exporting, Settings, presets and sending a report are refused.
@@ -214,11 +214,13 @@ Keys named here and in the page are the defaults: the person can rebind them in 
 Group by something **complete and checkable**: a location, a subject, a shoot folder, a time window.
 Never by "the ones I was deciding between".
 
-## Hand over, and then stop
+## Hand over, and keep working alongside
 
 Put what they're looking at and what deserves attention in the question itself — the cuts, the
-untouched pile, the frames with alternates — then wait for the reply. **Don't drive the page while
-they're in it**, and don't re-send the sheet to "check": it would replace their work in progress.
+untouched pile, the frames with alternates. **Working at the same time is the design**: your changes are
+applied and reviewable, so carry on with what they are not touching while they work. Leave alone only what
+they changed since (`yoursSince` in `get_outcome`, `view what:'notes'`), and don't re-send the whole sheet
+to "check": it would replace their work in progress - change one frame or group with a named op instead.
 
 ## Read the result
 

@@ -180,12 +180,13 @@ window.__loadOrder({
    in the grid when it is portrait, and it should establish what the post is about. Choose it
    deliberately and say why.
 
-## Hand over, and then stop
+## Hand over, and keep working alongside
 
 Put what they are looking at into the question — how many slides, which decisions are still dashed,
-what the tool flagged — and then wait for the reply. **Don't drive the page while they are in it**,
-never answer for them, and never re-send an order to a board they have started arranging: it would
-replace the whole sequence. A proposal that replaces the slides is applied as your change; if it drops framing or
+what the tool flagged. **Working at the same time is the design**: carry on with the slides they are not
+touching (frame the next one, fill an empty cell) while they work on others, and leave alone only what they
+changed since (`yoursSince` in `get_outcome`). Never answer for them, and never re-send an order to a board
+they have started arranging: it would replace the whole sequence. A proposal that replaces the slides is applied as your change; if it drops framing or
 styling the person made in Edit, their Reject brings it back, but do not make them: to only reorder, give `propose {project, tab: 'sort', why, slides: [ids]}`: every slide id once,
 in the new order, and each slide is taken whole from the project, so what they framed rides along. To change slides
 too, start from the slides in `view what:'project' detail:'full'` and change only what you mean to. To answer a question mid-way, read the board (`view what:'tab'`) instead.
@@ -324,7 +325,7 @@ yours goes back; what they changed since stays theirs), edit on top, or comment 
 may carry the person's note on why (Reject with a comment, in the change's thread; also in `view what:'notes'`):
 read it before trying again, and do what it says instead of re-sending the same change; answer a comment
 with `propose {replyTo: <change id>, why}` (words, or with a follow-up change); `withdraw` takes back a change they
-have not reviewed. If they paused your edits, a change waits (`held`) for their Apply. Some things stay theirs:
+have not reviewed. They may work at the same time as you: keep going on what they are not touching, and leave what they changed since (`yoursSince`) as theirs. If they paused your edits, a change waits (`held`) for their Apply. Some things stay theirs:
 deleting a project or a post, restoring a version, adding photos, jumping the History, reapplying a kept edit and
 picking marks by contrast are only *offered*; approving or ruling a slide, its note and comment, keeping or
 rejecting your changes, answering your own questions, exporting, Settings, presets and sending a report are refused.

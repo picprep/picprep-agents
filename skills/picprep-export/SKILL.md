@@ -149,7 +149,7 @@ yours goes back; what they changed since stays theirs), edit on top, or comment 
 may carry the person's note on why (Reject with a comment, in the change's thread; also in `view what:'notes'`):
 read it before trying again, and do what it says instead of re-sending the same change; answer a comment
 with `propose {replyTo: <change id>, why}` (words, or with a follow-up change); `withdraw` takes back a change they
-have not reviewed. If they paused your edits, a change waits (`held`) for their Apply. Some things stay theirs:
+have not reviewed. They may work at the same time as you: keep going on what they are not touching, and leave what they changed since (`yoursSince`) as theirs. If they paused your edits, a change waits (`held`) for their Apply. Some things stay theirs:
 deleting a project or a post, restoring a version, adding photos, jumping the History, reapplying a kept edit and
 picking marks by contrast are only *offered*; approving or ruling a slide, its note and comment, keeping or
 rejecting your changes, answering your own questions, exporting, Settings, presets and sending a report are refused.
