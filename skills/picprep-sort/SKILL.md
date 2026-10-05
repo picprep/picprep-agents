@@ -71,8 +71,8 @@ surplus.
 ## Put it in front of them: a project, an ask, a reply
 
 PicPrep keeps a **project** per folder, and the person works in its app. Your changes (`propose`) are
-**applied at once**, marked as yours with your reason, whether or not they are watching; they keep, reject,
-edit on top or comment on each. You talk to them through **questions** (`ask` for an answer in their words,
+**applied at once**, marked as yours with your reason, whether or not they are watching; each stands unless they reject it;
+they may edit on top or comment on it. You talk to them through **questions** (`ask` for an answer in their words,
 `choose` for options): pinned to a tab, never blocking them, answered when they like. You never answer for
 them, and you never need to watch the board.
 
@@ -83,7 +83,7 @@ the whole task, not only while a change is applied. Nothing in the project chang
 calls keep it on, and left alone it clears itself after two minutes: one call at the start and one at the end, not a
 progress report.
 
-**One task, one change, and a change is not a message.** Put every post, select and field change of a task in one `propose` (layout and slide ops go one per call); its `why` is one line about the task as a whole, why it suits these photos, not what the ops do ("one standing post, one crouching", not "rename the post, create a post, assign"). The person's inbox holds only what you address to them: anything they should read or answer goes in `ask` or `choose`, never in a `why`. End with a sentence or two: what you changed or filed, and that it is theirs to keep or reject in their window. Report only what the tools answered; when you did not look at the result, say so. After `ask` or
+**One task, one change, and a change is not a message.** Put every post, select and field change of a task in one `propose` (layout and slide ops go one per call); its `why` is one line about the task as a whole, why it suits these photos, not what the ops do ("one standing post, one crouching", not "rename the post, create a post, assign"). The person's inbox holds only what you address to them: anything they should read or answer goes in `ask` or `choose`, never in a `why`. Keep a `why` to a short phrase: it shows when they hover the change's step in History. End with a sentence or two: what you changed or filed, and that it stands unless they reject it (its reason is on its step in History). Report only what the tools answered; when you did not look at the result, say so. After `ask` or
 `choose`, nobody may be at the window: read `get_outcome` without a long `waitSec` and tell them the question is
 waiting there, unless they said they are answering now. A refusal saying a thing is already so is the answer: tell
 them, rather than looking for another way to change it.
@@ -95,7 +95,7 @@ With the PicPrep MCP tools (the plugin registers them):
 2. `view {project, what: 'notes'}` when they have already worked on the Board: their notes, tags and rulings
    are theirs, and an order that ignores them gets rejected.
 3. `propose {project, tab: 'sort', why, slides: [...]}`: the order below, with each `sources` entry a project
-   photo id. It is applied at once, marked as yours (`{proposalId, changes}`), and they keep, reject or rearrange it.
+   photo id. It is applied at once, marked as yours (`{proposalId, changes}`), and it stands unless they reject it; they may rearrange it.
    Then `ask {project, tab: 'sort', question, about: 'change:<id>', navigate: true}` brings their window to the
    Board; the question waits in their Questions inbox.
 4. `get_outcome {project, askId, waitSec: 600}`, again while it returns `{pending: true}`; `get_outcome
@@ -291,7 +291,7 @@ lists them (`posts: [{id, name, slides, shown}]`) and says which post the slides
   `post.unassign {post, photos}` (photos by id; a photo may be in several posts), `post.moveSlide {slide, to,
   index?, copy?}`, `post.color {post, color}` (any `#rrggbb`, lower-case), `post.delete {post}`, and `post.cover {photo}` (the project thumbnail, the picture on the Projects screen - not the post's cover, which is its first slide; photo null: automatic again; without a choice
   it is the first slide's first photo of the first post, else the first kept photo). Each is applied as your change,
-  marked, which they keep or reject; `post.delete` is only offered (removing a post is theirs). A new post's id comes
+  marked, which stands unless they reject it; `post.delete` is only offered unless their Settings let you. A new post's id comes
   from `view` once it is applied.
 - A post's main destination: `post.destination {post, destination}` (one of `instagram`, `facebook`, `x`,
   `linkedin`, `threads`, `pinterest`; omit it for none), applied as your change like `post.color`. It decides
@@ -305,7 +305,7 @@ lists them (`posts: [{id, name, slides, shown}]`) and says which post the slides
 Besides a whole new order (`slides`), every Board action has a named op you can propose with `propose
 {project, why, changes: [{op, args}]}` (one `slide.*` op per proposal), computed by the server exactly as the person's own
 key or menu computes it: `slide.stack {slide, with}` (two single photos, or a photo joining the stack beside
-it; a before/after, an EXIF card and a split are refused with the reason, and a slide a tool turned into one of those keeps its id, so check its `kind` in `view what:'project'` first), `slide.unstack`, `slide.swapStack`, `slide.split {slide, n, ratio?, ratios?}` (also re-slices a split; `ratio` "W:H" is every slice's shape, `ratios` one per slice, "W:H" or null) and `slide.unsplit`, `slide.blurFit`, `slide.reframe {slides, fit}`,
+it; a before/after, an EXIF card and a split are refused with the reason, and a slide a tool turned into one of those keeps its id, so check its `kind` in `view what:'project'` first), `slide.unstack`, `slide.swapStack`, `slide.takeOut {slide}` (to the Taken out shelf), `slide.split {slide, n, ratio?, ratios?}` (also re-slices a split; `ratio` "W:H" is every slice's shape, `ratios` one per slice, "W:H" or null) and `slide.unsplit`, `slide.blurFit`, `slide.reframe {slides, fit}`,
 `slide.setType {slides, type}`, `slide.makeCard`, `slide.duplicate`, `slide.copyLayout`, `slide.newSlide
 {template, after?}`, `slide.applyTemplate {slides, template}` and `slide.addTemplate {template, after?, photos?}` (ids
 from `view what:'templates'`), `slide.pullPhoto {slide, cell}`, `slide.putPhoto {slide, cell, photo, from?}` (`from`: the photo's own one-photo slide, removed, as dragging that card into an empty cell does) and `slide.pasteLook {from, slides, parts?}` (the
@@ -316,18 +316,21 @@ parts of one slide's look - layout, separators, frameStyle, background, effects,
 `history.jump {step}`; a photo from outside the project is `photos.add {paths}`. Ids come from `view what:'project'`; a
 wrong one, a missing or extra argument or a value out of range is refused with the reason, and nothing is written.
 Each op is applied as your change and is one step in their History (one Undo takes it back); `history.jump` and
-`photos.add` are only offered.
+`photos.add` are only offered unless their Settings let you. To take a slide out of the post, `slide.takeOut {slide}`: it
+goes to the post's Taken out shelf, whole, as their X on the Board does (Put back there, or Reject, brings it back).
 
 **Your changes are applied, and reviewable.** A named op, a `set` or a new order is applied at once by PicPrep,
-marked as yours with your reason, whether or not the person is watching. They keep it, reject it (only what is still
-yours goes back; what they changed since stays theirs), edit on top, or comment on it. `propose` returns a
+marked as yours with your reason, whether or not the person is watching. It stands unless they reject it (only what is still
+yours goes back; what they changed since stays theirs); they may edit on top or comment on it. `propose` returns a
 `proposalId`: `get_outcome` gives each change's state, what they changed since and their comments. A rejected change
 may carry the person's note on why (Reject with a comment, in the change's thread; also in `view what:'notes'`):
 read it before trying again, and do what it says instead of re-sending the same change; answer a comment
 with `propose {replyTo: <change id>, why}` (words, or with a follow-up change); `withdraw` takes back a change they
 have not reviewed. They may work at the same time as you: keep going on what they are not touching, and leave what they changed since (`yoursSince`) as theirs. If they paused your edits, a change waits (`held`) for their Apply. Some things stay theirs:
 deleting a project or a post, restoring a version, adding photos, jumping the History, reapplying a kept edit and
-picking marks by contrast are only *offered*; approving or ruling a slide, its note and comment, keeping or
+picking marks by contrast are only *offered*, unless their Settings (Assistant > What it may do) let you: then
+`propose` answers `auto` and their window does it, or a post's delete is an ordinary change. Deleting the project
+and throwing away a kept edit always wait for them. Approving or ruling a slide, its note and comment, keeping or
 rejecting your changes, answering your own questions, exporting, Settings, presets and sending a report are refused.
 Asked for one of those, say plainly that only they can, and point them there (`show_tab`). Whether to change
 something at all is your judgement; when it is theirs to decide, `ask` (their words) or `choose` (options).
