@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "picprep": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "picprep-mcp"
+      ]
+    }
+  }
+}

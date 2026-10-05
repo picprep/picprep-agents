@@ -1,0 +1,14 @@
+{
+  "name": "picprep",
+  "version": "1.0.0",
+  "description": "Drive PicPrep from your assistant - choose which photos make the cut, arrange the keepers into the running order of a post, frame landscapes for a portrait-first feed, watermark, and export at a platform's size - handing the judgement calls back to a person instead of guessing at them.",
+  "mcpServers": {
+    "picprep": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "picprep-mcp"
+      ]
+    }
+  }
+}

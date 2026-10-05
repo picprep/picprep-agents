@@ -1,0 +1,15 @@
+{
+  "name": "picprep-agents",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PicPrep for assistants: the picprep-mcp connector, the skills, and the plugins and settings for each agent harness.",
+  "license": "MIT",
+  "author": "Tal Afek",
+  "scripts": {
+    "test": "node test/bridge.js && node test/plugin.js && node test/names.js && node test/parity.js",
+    "build:mcpb": "node scripts/build-mcpb.js"
+  },
+  "engines": {
+    "node": ">=20.15"
+  }
+}

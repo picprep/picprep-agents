@@ -1,0 +1,3521 @@
+{
+ "skill_name": "picprep (the connector, and the plugin's skills)",
+ "note": "Written by node eval/eval.js labels from eval/tasks.js. must / may / must_not were fixed before any run.",
+ "always_allowed": [
+  "view",
+  "list_projects",
+  "get_outcome",
+  "status",
+  "show_tab"
+ ],
+ "unreached": {
+  "rescued.reapply": "needs an edit PicPrep kept after a failed save; a failed save cannot be staged without breaking the app under test",
+  "rescued.discard": "as rescued.reapply",
+  "select.swapAlternate": "needs frames with alternates, which Select finds itself among near-duplicates; the sample has none",
+  "project.restoreVersion": "needs a saved version, and only a window saves one; the near miss (no version to go back to) is the task restore-version"
+ },
+ "evals": [
+  {
+   "id": 1,
+   "name": "pick-six",
+   "prompt": "I have my trip photos open in PicPrep. Pick the best 6 for an Instagram carousel and tell me why.",
+   "starting_state": "fresh",
+   "expected_output": "Six photos are in the post, each choice explained from what the photos show (it has to look at them: a screenshot), and the person is told the picks are theirs to keep or reject.",
+   "must": [
+    "view",
+    "view_screenshot",
+    "status",
+    "propose",
+    {
+     "any": [
+      "post.assign",
+      "set"
+     ]
+    }
+   ],
+   "may": [
+    "post.destination",
+    "select.mark",
+    "order",
+    "ask",
+    "choose"
+   ],
+   "must_not": [
+    "post.create"
+   ],
+   "limits": {
+    "view_screenshot": 4
+   },
+   "expectations": [
+    "six-in-post"
+   ]
+  },
+  {
+   "id": 2,
+   "name": "left-out-why",
+   "prompt": "Last time you went through these photos and left some out. Which ones, and why?",
+   "starting_state": "prior",
+   "expected_output": "Names young-beech, chateau-frontenac and mount-ida as cut and mongolian-lake as a maybe, with the reasons recorded in the app (near duplicate and darker; wall cuts the frame, sky blown out; hazy; a third landscape), not invented ones. Changes nothing.",
+   "must": [
+    "view"
+   ],
+   "may": [],
+   "must_not": [
+    "propose",
+    "ask",
+    "choose",
+    "withdraw",
+    "view_screenshot"
+   ],
+   "limits": {},
+   "expectations": [
+    "unchanged"
+   ]
+  },
+  {
+   "id": 3,
+   "name": "export-it",
+   "prompt": "Export it.",
+   "starting_state": "carousel",
+   "expected_output": "Says plainly that it cannot export, that only the person can, and points them to Export (ideally bringing the window there). Never says or implies files were written.",
+   "must": [],
+   "may": [
+    "show_tab",
+    "ask"
+   ],
+   "must_not": [
+    "propose",
+    "withdraw",
+    "choose"
+   ],
+   "limits": {},
+   "expectations": [
+    "unchanged-but-questions"
+   ]
+  },
+  {
+   "id": 4,
+   "name": "undo-that",
+   "prompt": [
+    "Move the fishing boats slide to the front.",
+    "Actually, undo what you just did."
+   ],
+   "starting_state": "carousel",
+   "expected_output": "The first request moves the slide; the second takes that same change back with the tool for it (not a second change that moves it again), and the order is as it was.",
+   "must": [
+    "view",
+    "propose",
+    "order",
+    "withdraw"
+   ],
+   "may": [],
+   "must_not": [],
+   "limits": {
+    "order": 1
+   },
+   "expectations": [
+    "order-restored"
+   ]
+  },
+  {
+   "id": 5,
+   "name": "not-running",
+   "prompt": "How many photos are in my trip project?",
+   "starting_state": "carousel, PicPrep not running",
+   "expected_output": "PicPrep is not running and cannot be started. It says so in plain words and what to do (install or open PicPrep, then ask again). It gives no number.",
+   "must": [
+    {
+     "any": [
+      "list_projects",
+      "view",
+      "open_project"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "propose",
+    "ask",
+    "choose"
+   ],
+   "limits": {
+    "calls": 4
+   },
+   "expectations": []
+  },
+  {
+   "id": 6,
+   "name": "no-project-open",
+   "prompt": "Move the fishing boats slide to the front of the carousel.",
+   "starting_state": "two, no project open",
+   "expected_output": "No project is open (the window is on the home screen) and there are two projects. It finds the one with the fishing boats (Trip) and moves that slide first; Lisbon is untouched.",
+   "must": [
+    "view",
+    "propose",
+    "order"
+   ],
+   "may": [
+    "open_project"
+   ],
+   "must_not": [
+    "ask",
+    "choose",
+    "post.reorder",
+    "post.cover"
+   ],
+   "limits": {},
+   "expectations": [
+    "boats-first",
+    "lisbon-untouched"
+   ]
+  },
+  {
+   "id": 7,
+   "name": "viewing-only",
+   "prompt": "Move the fishing boats slide to the front.",
+   "starting_state": "carousel, no licence (viewing only)",
+   "expected_output": "The copy has no subscription or trial, so nothing can be changed. It says that, and that only the person can enter a licence, in Settings, Licence. It does not claim the slide moved and does not keep retrying.",
+   "must": [
+    "view"
+   ],
+   "may": [
+    "propose",
+    "order"
+   ],
+   "must_not": [
+    "withdraw",
+    "ask",
+    "choose"
+   ],
+   "limits": {
+    "propose": 1
+   },
+   "expectations": [
+    "unchanged"
+   ]
+  },
+  {
+   "id": 8,
+   "name": "favourite",
+   "prompt": "Put whichever of the last two slides I like best at the front.",
+   "starting_state": "carousel",
+   "expected_output": "It cannot know which one they like best: it asks through the app (a question in their window, best with the two as options) and changes nothing until answered.",
+   "must": [
+    "view",
+    {
+     "any": [
+      "ask",
+      "choose"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "propose",
+    "order"
+   ],
+   "limits": {},
+   "expectations": [
+    "asked-not-changed"
+   ]
+  },
+  {
+   "id": 9,
+   "name": "delete-project",
+   "prompt": "Delete this project, I'm done with it.",
+   "starting_state": "carousel",
+   "expected_output": "Deleting is the person's alone: it files the request so the app asks them to confirm, and says they must confirm it in the app. It never says the project is deleted.",
+   "must": [
+    "propose",
+    "project.delete"
+   ],
+   "may": [],
+   "must_not": [
+    "post.delete",
+    "post.unassign",
+    "select.mark",
+    "withdraw"
+   ],
+   "limits": {},
+   "expectations": [
+    "project-kept"
+   ]
+  },
+  {
+   "id": 10,
+   "name": "x-as-well",
+   "prompt": "Make this ready for X as well.",
+   "starting_state": "carousel",
+   "expected_output": "A second post for X beside the Instagram one (which stays for Instagram), holding the same slides or photos. Says what it made and that the person reviews it.",
+   "must": [
+    "view",
+    "propose",
+    "post.create"
+   ],
+   "may": [
+    "post.moveSlide",
+    "post.assign",
+    "ask",
+    "choose",
+    "order",
+    "post.rename",
+    "post.mute"
+   ],
+   "must_not": [
+    "post.destination"
+   ],
+   "limits": {},
+   "expectations": [
+    "second-post-for-x"
+   ]
+  },
+  {
+   "id": 11,
+   "name": "watermark-all",
+   "prompt": "Add my watermark bottom right on all slides.",
+   "starting_state": "carousel",
+   "expected_output": "Every slide of the post carries the mark, anchored bottom right, set in one change (not one call per slide).",
+   "must": [
+    "view",
+    "status",
+    "propose",
+    "set"
+   ],
+   "may": [
+    "view_screenshot"
+   ],
+   "must_not": [
+    "watermark.autoContrast",
+    "ask",
+    "choose"
+   ],
+   "limits": {
+    "propose": 2
+   },
+   "expectations": [
+    "marks-bottom-right"
+   ]
+  },
+  {
+   "id": 12,
+   "name": "cramped",
+   "prompt": "The third slide feels cramped, can you fix it?",
+   "starting_state": "carousel",
+   "expected_output": "Slide 3 is a stack of three photos. Either it gives the slide more room in one sensible change (fewer photos on it, or a roomier layout) and explains, or it asks which the person wants.",
+   "must": [
+    "view",
+    {
+     "any": [
+      "propose",
+      "ask",
+      "choose"
+     ]
+    }
+   ],
+   "may": [
+    "view_screenshot",
+    "slide.unstack",
+    "slide.pullPhoto",
+    "slide.setType",
+    "slide.applyTemplate",
+    "layout.applyTemplate",
+    "layout.removeCell",
+    "ask",
+    "choose"
+   ],
+   "must_not": [],
+   "limits": {
+    "view_screenshot": 2
+   },
+   "expectations": [
+    "slide3-lighter-or-asked"
+   ]
+  },
+  {
+   "id": 13,
+   "name": "circle-covers",
+   "prompt": "On slide 9, does the circle cover anything important in the photos under it?",
+   "starting_state": "studio",
+   "expected_output": "Only the picture can answer this: it looks at slide 9 and says what the circle covers. Changes nothing.",
+   "must": [
+    "view_screenshot"
+   ],
+   "may": [],
+   "must_not": [
+    "propose",
+    "ask",
+    "choose"
+   ],
+   "limits": {
+    "view_screenshot": 3
+   },
+   "expectations": [
+    "unchanged"
+   ]
+  },
+  {
+   "id": 14,
+   "name": "count-slides",
+   "prompt": "How many slides are in the carousel, and which of them hold more than one photo?",
+   "starting_state": "studio",
+   "expected_output": "18 slides as the Board counts them (16 if the panorama is counted once; either with the reason); slides 7 to 15 hold more than one photo. Read from the project, no screenshot.",
+   "must": [
+    "view"
+   ],
+   "may": [],
+   "must_not": [
+    "view_screenshot",
+    "propose",
+    "ask",
+    "choose"
+   ],
+   "limits": {},
+   "expectations": [
+    "unchanged"
+   ]
+  },
+  {
+   "id": 15,
+   "name": "take-me-to-export",
+   "prompt": "Take me to the export page.",
+   "starting_state": "studio",
+   "expected_output": "Brings the window to Export, and says so. Nothing else.",
+   "must": [
+    "show_tab"
+   ],
+   "may": [],
+   "must_not": [
+    "propose",
+    "ask",
+    "choose",
+    "view_screenshot"
+   ],
+   "limits": {},
+   "expectations": [
+    "unchanged"
+   ]
+  },
+  {
+   "id": 16,
+   "name": "open-lisbon",
+   "prompt": "Open my Lisbon project.",
+   "starting_state": "two, no project open",
+   "expected_output": "Opens Lisbon in the window and says so.",
+   "must": [
+    "open_project"
+   ],
+   "may": [],
+   "must_not": [
+    "propose",
+    "ask",
+    "choose"
+   ],
+   "limits": {},
+   "expectations": [
+    "unchanged"
+   ]
+  },
+  {
+   "id": 17,
+   "name": "which-projects",
+   "prompt": "Which projects do I have in PicPrep?",
+   "starting_state": "two, no project open",
+   "expected_output": "Lisbon (4 photos) and Trip (10 photos). Opens neither.",
+   "must": [
+    "list_projects"
+   ],
+   "may": [],
+   "must_not": [
+    "propose",
+    "open_project",
+    "ask",
+    "choose",
+    "view_screenshot"
+   ],
+   "limits": {},
+   "expectations": [
+    "unchanged"
+   ]
+  },
+  {
+   "id": 18,
+   "name": "choose-closer",
+   "prompt": "I can't decide whether slide 2 or slide 3 should close the carousel. Put the question to me in the app with both options so I can answer later.",
+   "starting_state": "studio",
+   "expected_output": "One question with the two options, left in the app; it does not wait for the answer or decide itself.",
+   "must": [
+    "choose"
+   ],
+   "may": [],
+   "must_not": [
+    "ask",
+    "propose"
+   ],
+   "limits": {},
+   "expectations": [
+    "one-choice-question"
+   ]
+  },
+  {
+   "id": 19,
+   "name": "ask-mood",
+   "prompt": "Ask me in the app what mood I'm going for with the captions. I'll answer when I'm back.",
+   "starting_state": "studio",
+   "expected_output": "One open question in the person's own words, left in the app; no options invented, nothing changed, no long wait.",
+   "must": [
+    "ask"
+   ],
+   "may": [],
+   "must_not": [
+    "choose",
+    "propose"
+   ],
+   "limits": {},
+   "expectations": [
+    "one-text-question"
+   ]
+  },
+  {
+   "id": 20,
+   "name": "take-question-back",
+   "prompt": "Never mind the question you left me about the cover, take it back.",
+   "starting_state": "asked",
+   "expected_output": "The open question about the cover is withdrawn.",
+   "must": [
+    "view",
+    "withdraw"
+   ],
+   "may": [],
+   "must_not": [
+    "propose",
+    "ask",
+    "choose",
+    "post.cover"
+   ],
+   "limits": {},
+   "expectations": [
+    "question-withdrawn"
+   ]
+  },
+  {
+   "id": 21,
+   "name": "did-i-answer",
+   "prompt": "Did I ever answer your question about the cover?",
+   "starting_state": "asked",
+   "expected_output": "No: the question is still open. It does not ask again or take it back.",
+   "must": [
+    {
+     "any": [
+      "get_outcome",
+      "view"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "propose",
+    "ask",
+    "choose",
+    "withdraw"
+   ],
+   "limits": {},
+   "expectations": [
+    "unchanged"
+   ]
+  },
+  {
+   "id": 22,
+   "name": "wider-boats",
+   "prompt": "On slide 7, give the boats about two thirds of the width.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.moveSeam"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.splitCell",
+    "layout.placeSeparator",
+    "layout.moveSeparator",
+    "layout.drawLine"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.moveSeam on slide 7 applied"
+   ]
+  },
+  {
+   "id": 23,
+   "name": "split-right-cell",
+   "prompt": "Slide 7: divide the right-hand cell in two, one above the other, so I can add another photo there.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.splitCell"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.drawLine",
+    "slide.split",
+    "layout.drawShape",
+    "layout.splitSeparator"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.splitCell on slide 7 applied"
+   ]
+  },
+  {
+   "id": 24,
+   "name": "swap-two",
+   "prompt": "On slide 7 swap the two photos around.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.swapPhotos"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.mirrorLayout",
+    "order",
+    "slide.putPhoto",
+    "layout.rotateQuadOrder",
+    "slide.swapStack"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.swapPhotos on slide 7 applied"
+   ]
+  },
+  {
+   "id": 25,
+   "name": "mirror",
+   "prompt": "Flip the whole layout of slide 9 left to right.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.mirrorLayout"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.swapPhotos",
+    "layout.rotateLayout",
+    "layout.rotateFrame",
+    "layout.flipCut",
+    "layout.turnShape"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.mirrorLayout on slide 9 applied"
+   ]
+  },
+  {
+   "id": 26,
+   "name": "quarter-turn",
+   "prompt": "Turn the layout of slide 7 a quarter turn so the photos sit one above the other. Keep the slide portrait.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.rotateLayout"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.rotateFrame",
+    "layout.mirrorLayout",
+    "layout.turnShape"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.rotateLayout on slide 7 applied"
+   ]
+  },
+  {
+   "id": 27,
+   "name": "landscape",
+   "prompt": "Make slide 7 landscape instead of portrait.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.rotateFrame"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.rotateLayout"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.rotateFrame on slide 7 applied"
+   ]
+  },
+  {
+   "id": 28,
+   "name": "one-cell-fewer",
+   "prompt": "Slide 10 has four photos. Drop the cell with the bay panorama so the other three share the space.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.removeCell"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.pullPhoto",
+    "layout.removeSeparator",
+    "post.unassign",
+    "layout.rotateQuadOrder"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.removeCell on slide 10 applied"
+   ]
+  },
+  {
+   "id": 29,
+   "name": "sixty-forty",
+   "prompt": "Give slide 7 the 60/40 two-photo layout.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "layout.applyTemplate",
+      "slide.applyTemplate"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "layout.moveSeam",
+    "slide.addTemplate",
+    "slide.newSlide"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.applyTemplate | slide.applyTemplate on slide 7 applied"
+   ]
+  },
+  {
+   "id": 30,
+   "name": "line-across",
+   "prompt": "Draw a straight line across slide 7 from the left edge to the right edge, about a third of the way down.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.drawLine"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.splitCell",
+    "layout.drawShape",
+    "layout.drawClosedShape",
+    "layout.diagonalCut"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.drawLine on slide 7 applied"
+   ]
+  },
+  {
+   "id": 31,
+   "name": "triangle",
+   "prompt": "Draw a triangle in the middle of slide 7 that cuts into the photos, so I can put a third photo in it.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.drawClosedShape"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.drawShape",
+    "layout.drawLine"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.drawClosedShape on slide 7 applied"
+   ]
+  },
+  {
+   "id": 32,
+   "name": "straighten-curve",
+   "prompt": "On slide 8, take the curve out of the curved line. Leave the other lines alone.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.straightenSeparator"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.resetSeparators",
+    "layout.removeSeparator",
+    "layout.removeHandle"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.straightenSeparator on slide 8 applied"
+   ]
+  },
+  {
+   "id": 33,
+   "name": "reset-lines",
+   "prompt": "Slide 8 is a mess. Put every line back to a plain straight line between its two ends.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.resetSeparators"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.removeSeparator",
+    "layout.applyTemplate",
+    "slide.applyTemplate"
+   ],
+   "limits": {
+    "layout.straightenSeparator": 0
+   },
+   "expectations": [
+    "layout.resetSeparators on slide 8 applied"
+   ]
+  },
+  {
+   "id": 34,
+   "name": "lock-curve",
+   "prompt": "Lock the curved line on slide 8 so I don't move it by accident.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.lockSeparator"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.groupObjects"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.lockSeparator on slide 8 applied"
+   ]
+  },
+  {
+   "id": 35,
+   "name": "remove-line",
+   "prompt": "Remove the short level line on slide 8, so the two photos it divides become one.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.removeSeparator"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.resetSeparators",
+    "layout.removeCell",
+    "layout.straightenSeparator",
+    "layout.mergeSeparators"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.removeSeparator on slide 8 applied"
+   ]
+  },
+  {
+   "id": 36,
+   "name": "bend-line",
+   "prompt": "On slide 8, add a bend point in the middle of the upright straight line and pull it a little to the right.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.addHandle",
+    "layout.moveHandle"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.moveSeparator",
+    "layout.drawLine",
+    "layout.splitSeparator"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.addHandle on slide 8 applied",
+    "layout.moveHandle on slide 8 applied"
+   ]
+  },
+  {
+   "id": 37,
+   "name": "sharp-and-fewer",
+   "prompt": "On slide 8's curved line, make the bend a sharp corner instead of a smooth curve.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.setHandle"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.straightenSeparator",
+    "layout.roundCorner",
+    "layout.removeHandle"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.setHandle on slide 8 applied"
+   ]
+  },
+  {
+   "id": 38,
+   "name": "drop-bend",
+   "prompt": "Take the bend point out of slide 8's curved line.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "layout.removeHandle",
+      "layout.straightenSeparator"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "layout.removeSeparator",
+    "layout.resetSeparators"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.removeHandle | layout.straightenSeparator on slide 8 applied"
+   ]
+  },
+  {
+   "id": 39,
+   "name": "round-corner",
+   "prompt": "On slide 8, the line in the top right corner bends at a right angle. Round that corner off, radius about 40.",
+   "starting_state": "lines",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.roundCorner"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.setHandle",
+    "layout.addHandle"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.roundCorner on slide 8 applied"
+   ]
+  },
+  {
+   "id": 40,
+   "name": "slide-end",
+   "prompt": "On slide 8, slide the top end of the upright straight line further to the left along the top edge. The bottom end stays.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.moveSeparatorEnd"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.moveSeparator",
+    "layout.placeSeparator"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.moveSeparatorEnd on slide 8 applied"
+   ]
+  },
+  {
+   "id": 41,
+   "name": "move-line",
+   "prompt": "Move the whole curved line on slide 8 a bit to the right, shape unchanged.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.moveSeparator"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.moveSeparatorEnd",
+    "layout.moveHandle",
+    "layout.placeSeparator"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.moveSeparator on slide 8 applied"
+   ]
+  },
+  {
+   "id": 42,
+   "name": "place-line",
+   "prompt": "Put the upright straight line on slide 8 at exactly 25% across and tilt it 10 degrees.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.placeSeparator"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.moveSeparatorEnd"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.placeSeparator on slide 8 applied"
+   ]
+  },
+  {
+   "id": 43,
+   "name": "move-junction",
+   "prompt": "On slide 8, the point where the short level line meets the upright one: move that meeting point up a little.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.moveJunction"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.moveSeparator",
+    "layout.detachSeparator"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.moveJunction on slide 8 applied"
+   ]
+  },
+  {
+   "id": 44,
+   "name": "detach-end",
+   "prompt": "On slide 8, the long slanting line ends where the short level line meets the upright one. Take that end off that meeting point.",
+   "starting_state": "lines",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.detachSeparator"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.removeSeparator",
+    "layout.moveJunction"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.detachSeparator on slide 8 applied"
+   ]
+  },
+  {
+   "id": 45,
+   "name": "cut-and-join",
+   "prompt": "Cut the curved line on slide 8 in two at its middle. Then join the two halves back into one line: I only want to see that it works.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.splitSeparator",
+    "layout.mergeSeparators"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.drawLine",
+    "layout.removeSeparator",
+    "withdraw"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.splitSeparator on slide 8 applied",
+    "layout.mergeSeparators on slide 8 applied"
+   ]
+  },
+  {
+   "id": 46,
+   "name": "add-box",
+   "prompt": "Add a small framed box in the top left corner of slide 9 for another photo.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.drawShape"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.drawClosedShape",
+    "layout.splitCell",
+    "layout.insetFrames"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.drawShape on slide 9 applied"
+   ]
+  },
+  {
+   "id": 47,
+   "name": "remove-circle",
+   "prompt": "Take the circle off slide 9.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.removeShape"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.removeCell",
+    "layout.removeSeparator",
+    "slide.pullPhoto"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.removeShape on slide 9 applied"
+   ]
+  },
+  {
+   "id": 48,
+   "name": "circle-cuts",
+   "prompt": "Make the circle on slide 9 cut into the photos under it instead of sitting on top of them.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.setShapeMode"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.restackShape",
+    "layout.setShapeInside"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.setShapeMode on slide 9 applied"
+   ]
+  },
+  {
+   "id": 49,
+   "name": "circle-past-edge",
+   "prompt": "Keep the circle on slide 9 inside the card, so it can never run past the edge.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.setShapeInside"
+   ],
+   "may": [
+    "layout.moveShape"
+   ],
+   "must_not": [
+    "layout.setShapeMode"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.setShapeInside on slide 9 applied"
+   ]
+  },
+  {
+   "id": 50,
+   "name": "circle-up-bigger",
+   "prompt": "Move the circle on slide 9 up a bit and make it about 20% bigger.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "layout.moveShape",
+      "layout.transformObjects"
+     ]
+    },
+    {
+     "any": [
+      "layout.resizeShape",
+      "layout.transformObjects"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "layout.drawShape",
+    "layout.removeShape"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.moveShape | layout.transformObjects on slide 9 applied",
+    "layout.resizeShape | layout.transformObjects on slide 9 applied"
+   ]
+  },
+  {
+   "id": 51,
+   "name": "tilt-window",
+   "prompt": "Tilt the third little window on slide 12 by 15 degrees.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "layout.turnShape",
+      "layout.transformObjects"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "layout.rotateLayout",
+    "layout.rotateFrame"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.turnShape | layout.transformObjects on slide 12 applied"
+   ]
+  },
+  {
+   "id": 52,
+   "name": "window-to-front",
+   "prompt": "On slide 12, bring the first window in front of the others.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.restackShape"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.moveShape",
+    "order",
+    "layout.setShapeMode"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.restackShape on slide 12 applied"
+   ]
+  },
+  {
+   "id": 53,
+   "name": "align-and-space",
+   "prompt": "Line the three windows on slide 12 up on their left edges and space them evenly down the slide.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.alignObjects",
+    "layout.distributeObjects"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.moveShape",
+    "layout.insetFrames",
+    "layout.transformObjects"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.alignObjects on slide 12 applied",
+    "layout.distributeObjects on slide 12 applied"
+   ]
+  },
+  {
+   "id": 54,
+   "name": "same-size",
+   "prompt": "Make the windows on slide 12 all the same size as the first one.",
+   "starting_state": "lines",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.matchSize"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.resizeShape",
+    "layout.insetFrames",
+    "layout.transformObjects"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.matchSize on slide 12 applied"
+   ]
+  },
+  {
+   "id": 55,
+   "name": "group-all",
+   "prompt": "Group all three windows on slide 12 so they move as one.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.groupObjects"
+   ],
+   "may": [],
+   "must_not": [
+    "select.group",
+    "layout.lockSeparator"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.groupObjects on slide 12 applied"
+   ]
+  },
+  {
+   "id": 56,
+   "name": "ungroup",
+   "prompt": "Two of the windows on slide 12 are grouped. Ungroup them.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.ungroupObjects"
+   ],
+   "may": [],
+   "must_not": [
+    "select.ungroup",
+    "layout.removeShape"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.ungroupObjects on slide 12 applied"
+   ]
+  },
+  {
+   "id": 57,
+   "name": "copy-window",
+   "prompt": "Duplicate the third window on slide 12, with the copy a little below it.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.duplicateObjects"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.duplicate",
+    "layout.drawShape"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.duplicateObjects on slide 12 applied"
+   ]
+  },
+  {
+   "id": 58,
+   "name": "shrink-together",
+   "prompt": "Shrink all three windows on slide 12 together to 80% and nudge them to the left, keeping their arrangement.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.transformObjects"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.resizeShape",
+    "layout.moveShape",
+    "layout.insetFrames",
+    "layout.alignObjects",
+    "layout.distributeObjects",
+    "layout.matchSize"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.transformObjects on slide 12 applied"
+   ]
+  },
+  {
+   "id": 59,
+   "name": "four-windows",
+   "prompt": "Slide 12: four windows in a grid instead of three, with rounded corners and a shadow.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.insetFrames"
+   ],
+   "may": [
+    "slide.putPhoto"
+   ],
+   "must_not": [
+    "layout.duplicateObjects",
+    "layout.drawShape",
+    "slide.applyTemplate"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.insetFrames on slide 12 applied"
+   ]
+  },
+  {
+   "id": 60,
+   "name": "gentle-slant",
+   "prompt": "The diagonal on slide 11 goes corner to corner. Make it a gentle slant, and slanting the other way.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.diagonalCut",
+    "layout.flipCut"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.mirrorLayout",
+    "layout.rotateLayout",
+    "layout.applyTemplate"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.diagonalCut on slide 11 applied",
+    "layout.flipCut on slide 11 applied"
+   ]
+  },
+  {
+   "id": 61,
+   "name": "rotate-quad",
+   "prompt": "On slide 10, move each of the four photos one triangle on, clockwise.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.rotateQuadOrder"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.rotateLayout",
+    "layout.swapPhotos",
+    "layout.rotateFrame"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.rotateQuadOrder on slide 10 applied"
+   ]
+  },
+  {
+   "id": 62,
+   "name": "white-gap",
+   "prompt": "Fill the gap of the torn strip on slide 13 with plain white.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.stripGap"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.setType",
+    "set",
+    "post.color"
+   ],
+   "limits": {},
+   "expectations": [
+    "layout.stripGap on slide 13 applied"
+   ]
+  },
+  {
+   "id": 63,
+   "name": "stack-two",
+   "prompt": "Put slides 2 and 3 together as one stacked slide.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "slide.stack"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.makeCollage",
+    "slide.addTemplate",
+    "slide.makeBeforeAfter"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.stack on slide 2 applied"
+   ]
+  },
+  {
+   "id": 64,
+   "name": "unstack",
+   "prompt": "Break the stack on slide 14 up into one slide per photo.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "slide.unstack"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.pullPhoto",
+    "slide.split"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.unstack on slide 14 applied"
+   ]
+  },
+  {
+   "id": 65,
+   "name": "pull-one",
+   "prompt": "Take just the village street photo out of the stack on slide 14 into a slide of its own.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "slide.pullPhoto"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.unstack",
+    "post.unassign",
+    "layout.removeCell"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.pullPhoto on slide 14 applied"
+   ]
+  },
+  {
+   "id": 66,
+   "name": "swap-stack",
+   "prompt": "On slide 15, swap which photo is on top.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.swapStack",
+      "layout.swapPhotos"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "order",
+    "layout.mirrorLayout"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.swapStack | layout.swapPhotos on slide 15 applied"
+   ]
+  },
+  {
+   "id": 67,
+   "name": "make-panorama",
+   "prompt": "Spread the lake photo on slide 3 across three slides as a panorama.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.split",
+      "slide.setType"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "layout.splitCell",
+    "slide.duplicate",
+    "slide.applyTemplate"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.split | slide.setType on slide 3 applied"
+   ]
+  },
+  {
+   "id": 68,
+   "name": "panorama-in-two",
+   "prompt": "The bay panorama at the end takes three slides. Make it two.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.split",
+      "slide.setType"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "slide.unsplit",
+    "layout.removeCell"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.split | slide.setType on slide 16 applied"
+   ]
+  },
+  {
+   "id": 69,
+   "name": "panorama-whole",
+   "prompt": "Post the bay panorama as one whole photo again, not split.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.unsplit",
+      "slide.setType"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "slide.unstack",
+    "slide.reframe"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.unsplit | slide.setType on slide 16 applied"
+   ]
+  },
+  {
+   "id": 70,
+   "name": "blur-fit",
+   "prompt": "Slide 2: show the whole photo over a blurred copy of itself instead of cropping it.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.blurFit",
+      "slide.setType"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "slide.reframe"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.blurFit | slide.setType on slide 2 applied"
+   ]
+  },
+  {
+   "id": 71,
+   "name": "reframe-four",
+   "prompt": "Slides 1 to 4: fit each whole photo inside its frame, don't crop. Plain background, no blur.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "slide.reframe"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.blurFit",
+    "layout.stripGap"
+   ],
+   "limits": {
+    "slide.reframe": 1
+   },
+   "expectations": [
+    "slide.reframe on slide 1 applied"
+   ]
+  },
+  {
+   "id": 72,
+   "name": "retype-three",
+   "prompt": "Change slides 4, 5 and 6 to blurred-edge slides in one go.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "slide.setType"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.reframe"
+   ],
+   "limits": {
+    "slide.blurFit": 0,
+    "slide.setType": 1
+   },
+   "expectations": [
+    "slide.setType on slide 4 applied"
+   ]
+  },
+  {
+   "id": 73,
+   "name": "gear-card",
+   "prompt": "Add a card with the camera settings right after slide 1.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.makeCard",
+      "slide.toolNew",
+      "slide.addTemplate"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "slide.toolApply",
+    "slide.setType"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.makeCard | slide.toolNew | slide.addTemplate applied",
+    "one-slide-more"
+   ]
+  },
+  {
+   "id": 74,
+   "name": "card-in-place",
+   "prompt": "Turn slide 2 itself into an EXIF card: I want the settings card instead of the photo slide, not an extra slide.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "slide.toolApply"
+   ],
+   "may": [
+    "view"
+   ],
+   "must_not": [
+    "slide.makeCard",
+    "slide.toolNew",
+    "slide.addTemplate"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.toolApply applied",
+    "same-slide-count"
+   ]
+  },
+  {
+   "id": 75,
+   "name": "before-after",
+   "prompt": "Make a before/after slide from slides 1 and 4: slide 1 is the before.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.makeBeforeAfter",
+      "slide.toolNew"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "slide.stack",
+    "slide.makeCollage"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.makeBeforeAfter | slide.toolNew applied"
+   ]
+  },
+  {
+   "id": 76,
+   "name": "collage-from-stack",
+   "prompt": "Make a collage out of slide 14's three photos as a new slide next to it. Keep the stack as it is.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "slide.makeCollage"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.setType",
+    "slide.applyTemplate",
+    "slide.duplicate"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.makeCollage on slide 14 applied",
+    "one-slide-more"
+   ]
+  },
+  {
+   "id": 77,
+   "name": "empty-copy",
+   "prompt": "Add an empty slide with slide 9's layout, so I can drop other photos into it.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.copyLayout",
+      "slide.pasteLookNew"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "slide.duplicate",
+    "slide.pasteLook"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.copyLayout | slide.pasteLookNew on slide 9 applied"
+   ]
+  },
+  {
+   "id": 78,
+   "name": "blank-grid",
+   "prompt": "Add a blank four-photo grid slide at the end. I will fill it myself.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.newSlide",
+      "slide.addTemplate"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "slide.applyTemplate",
+    "slide.duplicate",
+    "slide.copyLayout"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.newSlide | slide.addTemplate applied",
+    "one-slide-more"
+   ]
+  },
+  {
+   "id": 79,
+   "name": "template-on-stack",
+   "prompt": "Use the \"Three columns\" template from the library on slide 14.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.applyTemplate",
+      "layout.applyTemplate",
+      "slide.toolApply"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "slide.addTemplate",
+    "slide.makeCollage",
+    "slide.newSlide"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.applyTemplate | layout.applyTemplate | slide.toolApply on slide 14 applied",
+    "same-slide-count"
+   ]
+  },
+  {
+   "id": 80,
+   "name": "new-from-tool",
+   "prompt": "Add a new slide at the very start, made from the side-by-side template, with the alpine slope and the chateau.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    {
+     "any": [
+      "slide.toolNew",
+      "slide.addTemplate"
+     ]
+    }
+   ],
+   "may": [],
+   "must_not": [
+    "slide.applyTemplate",
+    "slide.stack"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.toolNew | slide.addTemplate applied",
+    "one-slide-more"
+   ]
+  },
+  {
+   "id": 81,
+   "name": "paste-look",
+   "prompt": "Copy slide 9's look onto slides 7 and 11.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "slide.pasteLook"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.applyTemplate",
+    "layout.applyTemplate",
+    "slide.pasteLookNew",
+    "slide.copyLayout"
+   ],
+   "limits": {
+    "slide.pasteLook": 1
+   },
+   "expectations": [
+    "slide.pasteLook on slide 9 applied"
+   ]
+  },
+  {
+   "id": 82,
+   "name": "duplicate",
+   "prompt": "Duplicate slide 7.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "slide.duplicate"
+   ],
+   "may": [],
+   "must_not": [
+    "slide.copyLayout",
+    "slide.makeCollage",
+    "post.moveSlide"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.duplicate on slide 7 applied"
+   ]
+  },
+  {
+   "id": 83,
+   "name": "photo-into-circle",
+   "prompt": "Put the mount-ida photo into the circle on slide 9.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "slide.putPhoto"
+   ],
+   "may": [],
+   "must_not": [
+    "layout.swapPhotos",
+    "photos.add"
+   ],
+   "limits": {},
+   "expectations": [
+    "slide.putPhoto on slide 9 applied"
+   ]
+  },
+  {
+   "id": 84,
+   "name": "history-back",
+   "prompt": [
+    "Swap the two photos on slide 7, then flip the layout of slide 9 left to right.",
+    "Go back in the History to just before the flip."
+   ],
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "layout.swapPhotos",
+    "layout.mirrorLayout",
+    "history.jump"
+   ],
+   "may": [
+    "withdraw"
+   ],
+   "must_not": [],
+   "limits": {},
+   "expectations": [
+    "history.jump (offered to the person)"
+   ]
+  },
+  {
+   "id": 85,
+   "name": "mark-some",
+   "prompt": "Mark the two beech forest photos as maybes and cut mount-ida.",
+   "starting_state": "fresh",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "select.mark"
+   ],
+   "may": [],
+   "must_not": [
+    "post.unassign",
+    "select.group",
+    "post.assign"
+   ],
+   "limits": {},
+   "expectations": [
+    "select.mark applied",
+    "select.mark applied"
+   ]
+  },
+  {
+   "id": 86,
+   "name": "group-coast",
+   "prompt": "Group bay-panorama, crete-coast and fishing-boats as 'Coast'. I want at most two of them in the end.",
+   "starting_state": "fresh",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "select.group"
+   ],
+   "may": [],
+   "must_not": [
+    "select.mark",
+    "post.create",
+    "layout.groupObjects",
+    "post.assign"
+   ],
+   "limits": {},
+   "expectations": [
+    "select.group applied"
+   ]
+  },
+  {
+   "id": 87,
+   "name": "leave-group",
+   "prompt": "Take village-street out of the Forest walk group.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "select.removeFromGroup"
+   ],
+   "may": [],
+   "must_not": [
+    "select.ungroup",
+    "select.mark",
+    "post.unassign",
+    "layout.ungroupObjects"
+   ],
+   "limits": {},
+   "expectations": [
+    "select.removeFromGroup applied"
+   ]
+  },
+  {
+   "id": 88,
+   "name": "delete-group",
+   "prompt": "I don't need the Forest walk group any more. Remove the group; keep the photos where they are.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "select.ungroup"
+   ],
+   "may": [],
+   "must_not": [
+    "select.removeFromGroup",
+    "select.mark",
+    "post.unassign",
+    "layout.ungroupObjects"
+   ],
+   "limits": {},
+   "expectations": [
+    "select.ungroup applied"
+   ]
+  },
+  {
+   "id": 89,
+   "name": "add-folder",
+   "prompt": "Add the photos from the folder {photos}/lisbon to this project.",
+   "starting_state": "studio",
+   "expected_output": "Adding files is the person's to confirm: it files the request and says they apply it in the app. It does not open the folder as another project.",
+   "must": [
+    "view",
+    "propose",
+    "photos.add"
+   ],
+   "may": [],
+   "must_not": [
+    "open_project",
+    "post.assign"
+   ],
+   "limits": {},
+   "expectations": [
+    "photos.add (offered to the person)"
+   ]
+  },
+  {
+   "id": 90,
+   "name": "by-contrast",
+   "prompt": "On every slide, pick the light or the dark version of my watermark, whichever reads better on the photo.",
+   "starting_state": "marked",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "watermark.autoContrast"
+   ],
+   "may": [
+    "view_screenshot"
+   ],
+   "must_not": [
+    "set"
+   ],
+   "limits": {
+    "view_screenshot": 1
+   },
+   "expectations": [
+    "watermark.autoContrast (offered to the person)"
+   ]
+  },
+  {
+   "id": 91,
+   "name": "rename-and-colour",
+   "prompt": "Rename the Stories post to 'Story highlights' and make its tab orange.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "post.rename",
+    "post.color"
+   ],
+   "may": [],
+   "must_not": [
+    "post.create",
+    "post.delete"
+   ],
+   "limits": {},
+   "expectations": [
+    "post.rename applied",
+    "post.color applied"
+   ]
+  },
+  {
+   "id": 92,
+   "name": "posts-order",
+   "prompt": "Put the Stories post before the Carousel.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "post.reorder"
+   ],
+   "may": [],
+   "must_not": [
+    "order",
+    "post.moveSlide"
+   ],
+   "limits": {},
+   "expectations": [
+    "post.reorder applied"
+   ]
+  },
+  {
+   "id": 93,
+   "name": "pinterest-instead",
+   "prompt": "The carousel is going to Pinterest, not Instagram.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "post.destination"
+   ],
+   "may": [],
+   "must_not": [
+    "post.create",
+    "post.rename"
+   ],
+   "limits": {},
+   "expectations": [
+    "post.destination applied"
+   ]
+  },
+  {
+   "id": 94,
+   "name": "delete-post",
+   "prompt": "Delete the Stories post.",
+   "starting_state": "studio",
+   "expected_output": "Only the person removes a post: it files the request, says they confirm it in the app, and does not say the post is gone.",
+   "must": [
+    "view",
+    "propose",
+    "post.delete"
+   ],
+   "may": [],
+   "must_not": [
+    "project.delete",
+    "post.unassign"
+   ],
+   "limits": {},
+   "expectations": [
+    "post.delete (offered to the person)"
+   ]
+  },
+  {
+   "id": 95,
+   "name": "thumbnail",
+   "prompt": "Use the fishing boats photo as the project's thumbnail.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "post.cover"
+   ],
+   "may": [],
+   "must_not": [
+    "order",
+    "post.assign"
+   ],
+   "limits": {},
+   "expectations": [
+    "post.cover applied"
+   ]
+  },
+  {
+   "id": 96,
+   "name": "out-of-stories",
+   "prompt": "Take the fishing-boats photo out of Stories. It stays in the Carousel.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "post.unassign"
+   ],
+   "may": [],
+   "must_not": [
+    "select.mark",
+    "post.delete",
+    "post.moveSlide",
+    "post.mute"
+   ],
+   "limits": {},
+   "expectations": [
+    "post.unassign applied"
+   ]
+  },
+  {
+   "id": 97,
+   "name": "mute-warning",
+   "prompt": "Yes, village-street is in both posts on purpose. Stop warning me about it.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "post.mute"
+   ],
+   "may": [],
+   "must_not": [
+    "post.unassign",
+    "select.mark"
+   ],
+   "limits": {},
+   "expectations": [
+    "post.mute applied"
+   ]
+  },
+  {
+   "id": 98,
+   "name": "copy-to-stories",
+   "prompt": "Copy slide 9 into Stories too, exactly as it is.",
+   "starting_state": "studio",
+   "expected_output": "The request is carried out with the operation made for it, on the slide or photos named, with a reason, in as few changes as it takes; the person is told it is theirs to keep or reject.",
+   "must": [
+    "view",
+    "propose",
+    "post.moveSlide"
+   ],
+   "may": [],
+   "must_not": [
+    "post.assign",
+    "slide.duplicate",
+    "post.reorder"
+   ],
+   "limits": {},
+   "expectations": [
+    "post.moveSlide on slide 9 applied"
+   ]
+  },
+  {
+   "id": 99,
+   "name": "restore-version",
+   "prompt": "Go back to the last version I saved of this project.",
+   "starting_state": "studio",
+   "expected_output": "There is no saved version in this project: it looks (the versions list is empty), says so, and changes nothing. With one, the right operation is project.restoreVersion, which only asks the person.",
+   "must": [
+    "view"
+   ],
+   "may": [
+    "propose",
+    "project.restoreVersion",
+    "ask",
+    "choose"
+   ],
+   "must_not": [
+    "history.jump",
+    "withdraw"
+   ],
+   "limits": {},
+   "expectations": [
+    "unchanged-but-questions"
+   ]
+  }
+ ],
+ "coverage": {
+  "list_projects": {
+   "needed_by": [
+    "not-running",
+    "which-projects"
+   ],
+   "near_miss_in": []
+  },
+  "open_project": {
+   "needed_by": [
+    "not-running",
+    "open-lisbon"
+   ],
+   "near_miss_in": [
+    "which-projects",
+    "add-folder"
+   ]
+  },
+  "view": {
+   "needed_by": [
+    "pick-six",
+    "left-out-why",
+    "undo-that",
+    "not-running",
+    "no-project-open",
+    "viewing-only",
+    "favourite",
+    "x-as-well",
+    "watermark-all",
+    "cramped",
+    "count-slides",
+    "take-question-back",
+    "did-i-answer",
+    "wider-boats",
+    "split-right-cell",
+    "swap-two",
+    "mirror",
+    "quarter-turn",
+    "landscape",
+    "one-cell-fewer",
+    "sixty-forty",
+    "line-across",
+    "triangle",
+    "straighten-curve",
+    "reset-lines",
+    "lock-curve",
+    "remove-line",
+    "bend-line",
+    "sharp-and-fewer",
+    "drop-bend",
+    "round-corner",
+    "slide-end",
+    "move-line",
+    "place-line",
+    "move-junction",
+    "detach-end",
+    "cut-and-join",
+    "add-box",
+    "remove-circle",
+    "circle-cuts",
+    "circle-past-edge",
+    "circle-up-bigger",
+    "tilt-window",
+    "window-to-front",
+    "align-and-space",
+    "same-size",
+    "group-all",
+    "ungroup",
+    "copy-window",
+    "shrink-together",
+    "four-windows",
+    "gentle-slant",
+    "rotate-quad",
+    "white-gap",
+    "stack-two",
+    "unstack",
+    "pull-one",
+    "swap-stack",
+    "make-panorama",
+    "panorama-in-two",
+    "panorama-whole",
+    "blur-fit",
+    "reframe-four",
+    "retype-three",
+    "gear-card",
+    "card-in-place",
+    "before-after",
+    "collage-from-stack",
+    "empty-copy",
+    "blank-grid",
+    "template-on-stack",
+    "new-from-tool",
+    "paste-look",
+    "duplicate",
+    "photo-into-circle",
+    "history-back",
+    "mark-some",
+    "group-coast",
+    "leave-group",
+    "delete-group",
+    "add-folder",
+    "by-contrast",
+    "rename-and-colour",
+    "posts-order",
+    "pinterest-instead",
+    "delete-post",
+    "thumbnail",
+    "out-of-stories",
+    "mute-warning",
+    "copy-to-stories",
+    "restore-version"
+   ],
+   "near_miss_in": []
+  },
+  "view_screenshot": {
+   "needed_by": [
+    "pick-six",
+    "circle-covers"
+   ],
+   "near_miss_in": [
+    "left-out-why",
+    "count-slides",
+    "take-me-to-export",
+    "which-projects"
+   ]
+  },
+  "show_tab": {
+   "needed_by": [
+    "take-me-to-export"
+   ],
+   "near_miss_in": []
+  },
+  "ask": {
+   "needed_by": [
+    "favourite",
+    "cramped",
+    "ask-mood"
+   ],
+   "near_miss_in": [
+    "left-out-why",
+    "not-running",
+    "no-project-open",
+    "viewing-only",
+    "watermark-all",
+    "circle-covers",
+    "count-slides",
+    "take-me-to-export",
+    "open-lisbon",
+    "which-projects",
+    "choose-closer",
+    "take-question-back",
+    "did-i-answer"
+   ]
+  },
+  "choose": {
+   "needed_by": [
+    "favourite",
+    "cramped",
+    "choose-closer"
+   ],
+   "near_miss_in": [
+    "left-out-why",
+    "export-it",
+    "not-running",
+    "no-project-open",
+    "viewing-only",
+    "watermark-all",
+    "circle-covers",
+    "count-slides",
+    "take-me-to-export",
+    "open-lisbon",
+    "which-projects",
+    "ask-mood",
+    "take-question-back",
+    "did-i-answer"
+   ]
+  },
+  "propose": {
+   "needed_by": [
+    "pick-six",
+    "undo-that",
+    "no-project-open",
+    "delete-project",
+    "x-as-well",
+    "watermark-all",
+    "cramped",
+    "wider-boats",
+    "split-right-cell",
+    "swap-two",
+    "mirror",
+    "quarter-turn",
+    "landscape",
+    "one-cell-fewer",
+    "sixty-forty",
+    "line-across",
+    "triangle",
+    "straighten-curve",
+    "reset-lines",
+    "lock-curve",
+    "remove-line",
+    "bend-line",
+    "sharp-and-fewer",
+    "drop-bend",
+    "round-corner",
+    "slide-end",
+    "move-line",
+    "place-line",
+    "move-junction",
+    "detach-end",
+    "cut-and-join",
+    "add-box",
+    "remove-circle",
+    "circle-cuts",
+    "circle-past-edge",
+    "circle-up-bigger",
+    "tilt-window",
+    "window-to-front",
+    "align-and-space",
+    "same-size",
+    "group-all",
+    "ungroup",
+    "copy-window",
+    "shrink-together",
+    "four-windows",
+    "gentle-slant",
+    "rotate-quad",
+    "white-gap",
+    "stack-two",
+    "unstack",
+    "pull-one",
+    "swap-stack",
+    "make-panorama",
+    "panorama-in-two",
+    "panorama-whole",
+    "blur-fit",
+    "reframe-four",
+    "retype-three",
+    "gear-card",
+    "card-in-place",
+    "before-after",
+    "collage-from-stack",
+    "empty-copy",
+    "blank-grid",
+    "template-on-stack",
+    "new-from-tool",
+    "paste-look",
+    "duplicate",
+    "photo-into-circle",
+    "history-back",
+    "mark-some",
+    "group-coast",
+    "leave-group",
+    "delete-group",
+    "add-folder",
+    "by-contrast",
+    "rename-and-colour",
+    "posts-order",
+    "pinterest-instead",
+    "delete-post",
+    "thumbnail",
+    "out-of-stories",
+    "mute-warning",
+    "copy-to-stories"
+   ],
+   "near_miss_in": [
+    "left-out-why",
+    "export-it",
+    "not-running",
+    "favourite",
+    "circle-covers",
+    "count-slides",
+    "take-me-to-export",
+    "open-lisbon",
+    "which-projects",
+    "choose-closer",
+    "ask-mood",
+    "take-question-back",
+    "did-i-answer"
+   ]
+  },
+  "get_outcome": {
+   "needed_by": [
+    "did-i-answer"
+   ],
+   "near_miss_in": []
+  },
+  "withdraw": {
+   "needed_by": [
+    "undo-that",
+    "take-question-back"
+   ],
+   "near_miss_in": [
+    "left-out-why",
+    "export-it",
+    "viewing-only",
+    "delete-project",
+    "did-i-answer",
+    "cut-and-join",
+    "restore-version"
+   ]
+  },
+  "status": {
+   "needed_by": [
+    "pick-six",
+    "watermark-all"
+   ],
+   "near_miss_in": []
+  },
+  "history.jump": {
+   "needed_by": [
+    "history-back"
+   ],
+   "near_miss_in": [
+    "restore-version"
+   ]
+  },
+  "photos.add": {
+   "needed_by": [
+    "add-folder"
+   ],
+   "near_miss_in": [
+    "photo-into-circle"
+   ]
+  },
+  "rescued.reapply": {
+   "needed_by": [],
+   "near_miss_in": []
+  },
+  "rescued.discard": {
+   "needed_by": [],
+   "near_miss_in": []
+  },
+  "select.group": {
+   "needed_by": [
+    "group-coast"
+   ],
+   "near_miss_in": [
+    "group-all",
+    "mark-some"
+   ]
+  },
+  "select.ungroup": {
+   "needed_by": [
+    "delete-group"
+   ],
+   "near_miss_in": [
+    "ungroup",
+    "leave-group"
+   ]
+  },
+  "select.removeFromGroup": {
+   "needed_by": [
+    "leave-group"
+   ],
+   "near_miss_in": [
+    "delete-group"
+   ]
+  },
+  "select.mark": {
+   "needed_by": [
+    "mark-some"
+   ],
+   "near_miss_in": [
+    "delete-project",
+    "group-coast",
+    "leave-group",
+    "delete-group",
+    "out-of-stories",
+    "mute-warning"
+   ]
+  },
+  "select.swapAlternate": {
+   "needed_by": [],
+   "near_miss_in": []
+  },
+  "watermark.autoContrast": {
+   "needed_by": [
+    "by-contrast"
+   ],
+   "near_miss_in": [
+    "watermark-all"
+   ]
+  },
+  "project.restoreVersion": {
+   "needed_by": [],
+   "near_miss_in": []
+  },
+  "post.create": {
+   "needed_by": [
+    "x-as-well"
+   ],
+   "near_miss_in": [
+    "pick-six",
+    "group-coast",
+    "rename-and-colour",
+    "pinterest-instead"
+   ]
+  },
+  "post.rename": {
+   "needed_by": [
+    "rename-and-colour"
+   ],
+   "near_miss_in": [
+    "pinterest-instead"
+   ]
+  },
+  "post.color": {
+   "needed_by": [
+    "rename-and-colour"
+   ],
+   "near_miss_in": [
+    "white-gap"
+   ]
+  },
+  "post.destination": {
+   "needed_by": [
+    "pinterest-instead"
+   ],
+   "near_miss_in": [
+    "x-as-well"
+   ]
+  },
+  "post.reorder": {
+   "needed_by": [
+    "posts-order"
+   ],
+   "near_miss_in": [
+    "no-project-open",
+    "copy-to-stories"
+   ]
+  },
+  "post.delete": {
+   "needed_by": [
+    "delete-post"
+   ],
+   "near_miss_in": [
+    "delete-project",
+    "rename-and-colour",
+    "out-of-stories"
+   ]
+  },
+  "post.cover": {
+   "needed_by": [
+    "thumbnail"
+   ],
+   "near_miss_in": [
+    "no-project-open",
+    "take-question-back"
+   ]
+  },
+  "post.assign": {
+   "needed_by": [
+    "pick-six"
+   ],
+   "near_miss_in": [
+    "mark-some",
+    "group-coast",
+    "add-folder",
+    "thumbnail",
+    "copy-to-stories"
+   ]
+  },
+  "post.unassign": {
+   "needed_by": [
+    "out-of-stories"
+   ],
+   "near_miss_in": [
+    "delete-project",
+    "one-cell-fewer",
+    "pull-one",
+    "mark-some",
+    "leave-group",
+    "delete-group",
+    "delete-post",
+    "mute-warning"
+   ]
+  },
+  "post.mute": {
+   "needed_by": [
+    "mute-warning"
+   ],
+   "near_miss_in": [
+    "out-of-stories"
+   ]
+  },
+  "post.moveSlide": {
+   "needed_by": [
+    "copy-to-stories"
+   ],
+   "near_miss_in": [
+    "duplicate",
+    "posts-order",
+    "out-of-stories"
+   ]
+  },
+  "project.delete": {
+   "needed_by": [
+    "delete-project"
+   ],
+   "near_miss_in": [
+    "delete-post"
+   ]
+  },
+  "layout.splitCell": {
+   "needed_by": [
+    "split-right-cell"
+   ],
+   "near_miss_in": [
+    "wider-boats",
+    "line-across",
+    "add-box",
+    "make-panorama"
+   ]
+  },
+  "layout.removeCell": {
+   "needed_by": [
+    "one-cell-fewer"
+   ],
+   "near_miss_in": [
+    "remove-line",
+    "remove-circle",
+    "pull-one",
+    "panorama-in-two"
+   ]
+  },
+  "layout.removeSeparator": {
+   "needed_by": [
+    "remove-line"
+   ],
+   "near_miss_in": [
+    "one-cell-fewer",
+    "straighten-curve",
+    "reset-lines",
+    "drop-bend",
+    "detach-end",
+    "cut-and-join",
+    "remove-circle"
+   ]
+  },
+  "layout.splitSeparator": {
+   "needed_by": [
+    "cut-and-join"
+   ],
+   "near_miss_in": [
+    "split-right-cell",
+    "bend-line"
+   ]
+  },
+  "layout.mergeSeparators": {
+   "needed_by": [
+    "cut-and-join"
+   ],
+   "near_miss_in": [
+    "remove-line"
+   ]
+  },
+  "layout.detachSeparator": {
+   "needed_by": [
+    "detach-end"
+   ],
+   "near_miss_in": [
+    "move-junction"
+   ]
+  },
+  "layout.moveJunction": {
+   "needed_by": [
+    "move-junction"
+   ],
+   "near_miss_in": [
+    "detach-end"
+   ]
+  },
+  "layout.roundCorner": {
+   "needed_by": [
+    "round-corner"
+   ],
+   "near_miss_in": [
+    "sharp-and-fewer"
+   ]
+  },
+  "layout.straightenSeparator": {
+   "needed_by": [
+    "straighten-curve",
+    "drop-bend"
+   ],
+   "near_miss_in": [
+    "remove-line",
+    "sharp-and-fewer"
+   ]
+  },
+  "layout.lockSeparator": {
+   "needed_by": [
+    "lock-curve"
+   ],
+   "near_miss_in": [
+    "group-all"
+   ]
+  },
+  "layout.addHandle": {
+   "needed_by": [
+    "bend-line"
+   ],
+   "near_miss_in": [
+    "round-corner"
+   ]
+  },
+  "layout.removeHandle": {
+   "needed_by": [
+    "drop-bend"
+   ],
+   "near_miss_in": [
+    "straighten-curve",
+    "sharp-and-fewer"
+   ]
+  },
+  "layout.setHandle": {
+   "needed_by": [
+    "sharp-and-fewer"
+   ],
+   "near_miss_in": [
+    "round-corner"
+   ]
+  },
+  "layout.moveHandle": {
+   "needed_by": [
+    "bend-line"
+   ],
+   "near_miss_in": [
+    "move-line"
+   ]
+  },
+  "layout.moveSeparatorEnd": {
+   "needed_by": [
+    "slide-end"
+   ],
+   "near_miss_in": [
+    "move-line",
+    "place-line"
+   ]
+  },
+  "layout.moveSeparator": {
+   "needed_by": [
+    "move-line"
+   ],
+   "near_miss_in": [
+    "wider-boats",
+    "bend-line",
+    "slide-end",
+    "move-junction"
+   ]
+  },
+  "layout.placeSeparator": {
+   "needed_by": [
+    "place-line"
+   ],
+   "near_miss_in": [
+    "wider-boats",
+    "slide-end",
+    "move-line"
+   ]
+  },
+  "layout.moveSeam": {
+   "needed_by": [
+    "wider-boats"
+   ],
+   "near_miss_in": [
+    "sixty-forty"
+   ]
+  },
+  "layout.resetSeparators": {
+   "needed_by": [
+    "reset-lines"
+   ],
+   "near_miss_in": [
+    "straighten-curve",
+    "remove-line",
+    "drop-bend"
+   ]
+  },
+  "layout.drawLine": {
+   "needed_by": [
+    "line-across"
+   ],
+   "near_miss_in": [
+    "wider-boats",
+    "split-right-cell",
+    "triangle",
+    "bend-line",
+    "cut-and-join"
+   ]
+  },
+  "layout.drawShape": {
+   "needed_by": [
+    "add-box"
+   ],
+   "near_miss_in": [
+    "split-right-cell",
+    "line-across",
+    "triangle",
+    "circle-up-bigger",
+    "copy-window",
+    "four-windows"
+   ]
+  },
+  "layout.removeShape": {
+   "needed_by": [
+    "remove-circle"
+   ],
+   "near_miss_in": [
+    "circle-up-bigger",
+    "ungroup"
+   ]
+  },
+  "layout.setShapeMode": {
+   "needed_by": [
+    "circle-cuts"
+   ],
+   "near_miss_in": [
+    "circle-past-edge",
+    "window-to-front"
+   ]
+  },
+  "layout.setShapeInside": {
+   "needed_by": [
+    "circle-past-edge"
+   ],
+   "near_miss_in": [
+    "circle-cuts"
+   ]
+  },
+  "layout.restackShape": {
+   "needed_by": [
+    "window-to-front"
+   ],
+   "near_miss_in": [
+    "circle-cuts"
+   ]
+  },
+  "layout.moveShape": {
+   "needed_by": [
+    "circle-up-bigger"
+   ],
+   "near_miss_in": [
+    "window-to-front",
+    "align-and-space",
+    "shrink-together"
+   ]
+  },
+  "layout.resizeShape": {
+   "needed_by": [
+    "circle-up-bigger"
+   ],
+   "near_miss_in": [
+    "same-size",
+    "shrink-together"
+   ]
+  },
+  "layout.turnShape": {
+   "needed_by": [
+    "tilt-window"
+   ],
+   "near_miss_in": [
+    "mirror",
+    "quarter-turn"
+   ]
+  },
+  "layout.drawClosedShape": {
+   "needed_by": [
+    "triangle"
+   ],
+   "near_miss_in": [
+    "line-across",
+    "add-box"
+   ]
+  },
+  "layout.mirrorLayout": {
+   "needed_by": [
+    "mirror",
+    "history-back"
+   ],
+   "near_miss_in": [
+    "swap-two",
+    "quarter-turn",
+    "gentle-slant",
+    "swap-stack"
+   ]
+  },
+  "layout.rotateLayout": {
+   "needed_by": [
+    "quarter-turn"
+   ],
+   "near_miss_in": [
+    "mirror",
+    "landscape",
+    "tilt-window",
+    "gentle-slant",
+    "rotate-quad"
+   ]
+  },
+  "layout.rotateFrame": {
+   "needed_by": [
+    "landscape"
+   ],
+   "near_miss_in": [
+    "mirror",
+    "quarter-turn",
+    "tilt-window",
+    "rotate-quad"
+   ]
+  },
+  "layout.applyTemplate": {
+   "needed_by": [
+    "sixty-forty",
+    "template-on-stack"
+   ],
+   "near_miss_in": [
+    "reset-lines",
+    "gentle-slant",
+    "paste-look"
+   ]
+  },
+  "layout.diagonalCut": {
+   "needed_by": [
+    "gentle-slant"
+   ],
+   "near_miss_in": [
+    "line-across"
+   ]
+  },
+  "layout.flipCut": {
+   "needed_by": [
+    "gentle-slant"
+   ],
+   "near_miss_in": [
+    "mirror"
+   ]
+  },
+  "layout.rotateQuadOrder": {
+   "needed_by": [
+    "rotate-quad"
+   ],
+   "near_miss_in": [
+    "swap-two",
+    "one-cell-fewer"
+   ]
+  },
+  "layout.insetFrames": {
+   "needed_by": [
+    "four-windows"
+   ],
+   "near_miss_in": [
+    "add-box",
+    "align-and-space",
+    "same-size",
+    "shrink-together"
+   ]
+  },
+  "layout.transformObjects": {
+   "needed_by": [
+    "circle-up-bigger",
+    "tilt-window",
+    "shrink-together"
+   ],
+   "near_miss_in": [
+    "align-and-space",
+    "same-size"
+   ]
+  },
+  "layout.duplicateObjects": {
+   "needed_by": [
+    "copy-window"
+   ],
+   "near_miss_in": [
+    "four-windows"
+   ]
+  },
+  "layout.alignObjects": {
+   "needed_by": [
+    "align-and-space"
+   ],
+   "near_miss_in": [
+    "shrink-together"
+   ]
+  },
+  "layout.distributeObjects": {
+   "needed_by": [
+    "align-and-space"
+   ],
+   "near_miss_in": [
+    "shrink-together"
+   ]
+  },
+  "layout.matchSize": {
+   "needed_by": [
+    "same-size"
+   ],
+   "near_miss_in": [
+    "shrink-together"
+   ]
+  },
+  "layout.groupObjects": {
+   "needed_by": [
+    "group-all"
+   ],
+   "near_miss_in": [
+    "lock-curve",
+    "group-coast"
+   ]
+  },
+  "layout.ungroupObjects": {
+   "needed_by": [
+    "ungroup"
+   ],
+   "near_miss_in": [
+    "leave-group",
+    "delete-group"
+   ]
+  },
+  "layout.swapPhotos": {
+   "needed_by": [
+    "swap-two",
+    "swap-stack",
+    "history-back"
+   ],
+   "near_miss_in": [
+    "mirror",
+    "rotate-quad",
+    "photo-into-circle"
+   ]
+  },
+  "layout.stripGap": {
+   "needed_by": [
+    "white-gap"
+   ],
+   "near_miss_in": [
+    "reframe-four"
+   ]
+  },
+  "slide.stack": {
+   "needed_by": [
+    "stack-two"
+   ],
+   "near_miss_in": [
+    "before-after",
+    "new-from-tool"
+   ]
+  },
+  "slide.unstack": {
+   "needed_by": [
+    "unstack"
+   ],
+   "near_miss_in": [
+    "pull-one",
+    "panorama-whole"
+   ]
+  },
+  "slide.swapStack": {
+   "needed_by": [
+    "swap-stack"
+   ],
+   "near_miss_in": [
+    "swap-two"
+   ]
+  },
+  "slide.split": {
+   "needed_by": [
+    "make-panorama",
+    "panorama-in-two"
+   ],
+   "near_miss_in": [
+    "split-right-cell",
+    "unstack"
+   ]
+  },
+  "slide.unsplit": {
+   "needed_by": [
+    "panorama-whole"
+   ],
+   "near_miss_in": [
+    "panorama-in-two"
+   ]
+  },
+  "slide.blurFit": {
+   "needed_by": [
+    "blur-fit"
+   ],
+   "near_miss_in": [
+    "reframe-four"
+   ]
+  },
+  "slide.reframe": {
+   "needed_by": [
+    "reframe-four"
+   ],
+   "near_miss_in": [
+    "panorama-whole",
+    "blur-fit",
+    "retype-three"
+   ]
+  },
+  "slide.setType": {
+   "needed_by": [
+    "make-panorama",
+    "panorama-in-two",
+    "panorama-whole",
+    "blur-fit",
+    "retype-three"
+   ],
+   "near_miss_in": [
+    "white-gap",
+    "gear-card",
+    "collage-from-stack"
+   ]
+  },
+  "slide.makeCard": {
+   "needed_by": [
+    "gear-card"
+   ],
+   "near_miss_in": [
+    "card-in-place"
+   ]
+  },
+  "slide.makeBeforeAfter": {
+   "needed_by": [
+    "before-after"
+   ],
+   "near_miss_in": [
+    "stack-two"
+   ]
+  },
+  "slide.makeCollage": {
+   "needed_by": [
+    "collage-from-stack"
+   ],
+   "near_miss_in": [
+    "stack-two",
+    "before-after",
+    "template-on-stack",
+    "duplicate"
+   ]
+  },
+  "slide.copyLayout": {
+   "needed_by": [
+    "empty-copy"
+   ],
+   "near_miss_in": [
+    "blank-grid",
+    "paste-look",
+    "duplicate"
+   ]
+  },
+  "slide.newSlide": {
+   "needed_by": [
+    "blank-grid"
+   ],
+   "near_miss_in": [
+    "sixty-forty",
+    "template-on-stack"
+   ]
+  },
+  "slide.applyTemplate": {
+   "needed_by": [
+    "sixty-forty",
+    "template-on-stack"
+   ],
+   "near_miss_in": [
+    "reset-lines",
+    "four-windows",
+    "make-panorama",
+    "collage-from-stack",
+    "blank-grid",
+    "new-from-tool",
+    "paste-look"
+   ]
+  },
+  "slide.addTemplate": {
+   "needed_by": [
+    "gear-card",
+    "blank-grid",
+    "new-from-tool"
+   ],
+   "near_miss_in": [
+    "sixty-forty",
+    "stack-two",
+    "card-in-place",
+    "template-on-stack"
+   ]
+  },
+  "slide.toolNew": {
+   "needed_by": [
+    "gear-card",
+    "before-after",
+    "new-from-tool"
+   ],
+   "near_miss_in": [
+    "card-in-place"
+   ]
+  },
+  "slide.toolApply": {
+   "needed_by": [
+    "card-in-place",
+    "template-on-stack"
+   ],
+   "near_miss_in": [
+    "gear-card"
+   ]
+  },
+  "slide.pasteLook": {
+   "needed_by": [
+    "paste-look"
+   ],
+   "near_miss_in": [
+    "empty-copy"
+   ]
+  },
+  "slide.pasteLookNew": {
+   "needed_by": [
+    "empty-copy"
+   ],
+   "near_miss_in": [
+    "paste-look"
+   ]
+  },
+  "slide.duplicate": {
+   "needed_by": [
+    "duplicate"
+   ],
+   "near_miss_in": [
+    "copy-window",
+    "make-panorama",
+    "collage-from-stack",
+    "empty-copy",
+    "blank-grid",
+    "copy-to-stories"
+   ]
+  },
+  "slide.pullPhoto": {
+   "needed_by": [
+    "pull-one"
+   ],
+   "near_miss_in": [
+    "one-cell-fewer",
+    "remove-circle",
+    "unstack"
+   ]
+  },
+  "slide.putPhoto": {
+   "needed_by": [
+    "photo-into-circle"
+   ],
+   "near_miss_in": [
+    "swap-two"
+   ]
+  },
+  "order": {
+   "needed_by": [
+    "undo-that",
+    "no-project-open"
+   ],
+   "near_miss_in": [
+    "favourite",
+    "swap-two",
+    "window-to-front",
+    "swap-stack",
+    "posts-order",
+    "thumbnail"
+   ]
+  },
+  "set": {
+   "needed_by": [
+    "pick-six",
+    "watermark-all"
+   ],
+   "near_miss_in": [
+    "white-gap",
+    "by-contrast"
+   ]
+  }
+ }
+}

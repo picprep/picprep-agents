@@ -1,0 +1,4 @@
+# Skills and manifests ship to strangers' machines, including Windows ones where git would otherwise
+# check them out with CRLF endings. Keep them LF so front matter and JSON parse the same everywhere.
+* text=auto eol=lf
+*.png binary

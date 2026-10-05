@@ -1,0 +1,148 @@
+{
+  "note": "The PicPrep app's assistant tools as this repo last saw them. Written by node test/parity.js --write; never by hand.",
+  "tools": [
+    {
+      "name": "list_projects",
+      "args": [],
+      "required": []
+    },
+    {
+      "name": "open_project",
+      "args": [
+        "folder",
+        "project",
+        "name",
+        "tab"
+      ],
+      "required": []
+    },
+    {
+      "name": "view",
+      "args": [
+        "project",
+        "what",
+        "tab",
+        "post",
+        "path",
+        "since",
+        "level",
+        "detail"
+      ],
+      "required": [
+        "what"
+      ]
+    },
+    {
+      "name": "view_screenshot",
+      "args": [
+        "project",
+        "target",
+        "maxEdge"
+      ],
+      "required": [
+        "target"
+      ]
+    },
+    {
+      "name": "show_tab",
+      "args": [
+        "project",
+        "tab",
+        "slide",
+        "cell",
+        "view",
+        "askId",
+        "post"
+      ],
+      "required": [
+        "project",
+        "tab"
+      ]
+    },
+    {
+      "name": "ask",
+      "args": [
+        "project",
+        "question",
+        "tab",
+        "about",
+        "post",
+        "navigate"
+      ],
+      "required": [
+        "project",
+        "question"
+      ]
+    },
+    {
+      "name": "choose",
+      "args": [
+        "project",
+        "question",
+        "options",
+        "multi",
+        "tab",
+        "about",
+        "post",
+        "navigate"
+      ],
+      "required": [
+        "project",
+        "question",
+        "options"
+      ]
+    },
+    {
+      "name": "propose",
+      "args": [
+        "project",
+        "why",
+        "tab",
+        "post",
+        "set",
+        "slides",
+        "changes",
+        "replyTo"
+      ],
+      "required": [
+        "project",
+        "why"
+      ]
+    },
+    {
+      "name": "get_outcome",
+      "args": [
+        "project",
+        "askId",
+        "proposalId",
+        "waitSec"
+      ],
+      "required": [
+        "project"
+      ]
+    },
+    {
+      "name": "withdraw",
+      "args": [
+        "project",
+        "askId",
+        "proposalId"
+      ],
+      "required": [
+        "project"
+      ]
+    },
+    {
+      "name": "status",
+      "args": [
+        "project",
+        "working",
+        "note"
+      ],
+      "required": [
+        "project",
+        "working"
+      ]
+    }
+  ]
+}

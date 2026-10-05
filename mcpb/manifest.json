@@ -1,0 +1,48 @@
+{
+  "manifest_version": "0.3",
+  "name": "picprep",
+  "display_name": "PicPrep",
+  "version": "1.0.0",
+  "description": "Connect Claude to the PicPrep app on this computer.",
+  "long_description": "Drive PicPrep from your assistant - choose which photos make the cut, arrange the keepers into the running order of a post, frame landscapes for a portrait-first feed, watermark, and export at a platform's size - handing the judgement calls back to a person instead of guessing at them.",
+  "author": {
+    "name": "Tal Afek",
+    "url": "https://github.com/picprep"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/picprep/picprep-agents.git"
+  },
+  "homepage": "https://github.com/picprep/picprep-agents",
+  "license": "MIT",
+  "icon": "icon.png",
+  "keywords": [
+    "photos",
+    "instagram",
+    "curation",
+    "watermark",
+    "panorama",
+    "mcp"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js"
+      ]
+    }
+  },
+  "tools_generated": true,
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  }
+}

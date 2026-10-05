@@ -1,0 +1,37 @@
+# Publishing a GitHub Release of this repo ships picprep-mcp to npm (trusted publishing: OIDC, with
+# provenance, no token) and attaches picprep.mcpb for Claude Desktop. The release tag must be
+# v<version> of packages/picprep-mcp/package.json, and every manifest must carry that version
+# (test/plugin.js checks they agree).
+name: release
+on:
+  release:
+    types: [published]
+permissions:
+  contents: write
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: Tag matches the package version
+        run: |
+          v=$(node -p "require('./packages/picprep-mcp/package.json').version")
+          test "${{ github.event.release.tag_name }}" = "v$v" || { echo "tag ${{ github.event.release.tag_name }} is not v$v"; exit 1; }
+      - run: npm test
+      - run: node scripts/build-mcpb.js
+      - run: gh release upload "${{ github.event.release.tag_name }}" dist/picprep.mcpb --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: npm install -g npm@latest
+      # The first version is published by hand (PUBLISHING.md): npm takes a trusted publisher only for a package
+      # that exists. A version already on npm is left alone, so that release still gets its bundle.
+      - name: Publish to npm, unless this version is there
+        working-directory: packages/picprep-mcp
+        run: |
+          v=$(node -p "require('./package.json').version")
+          if npm view "picprep-mcp@$v" version >/dev/null 2>&1; then echo "picprep-mcp@$v is already on npm"; else npm publish --provenance --access public; fi

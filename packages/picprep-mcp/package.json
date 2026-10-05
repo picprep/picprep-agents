@@ -1,0 +1,38 @@
+{
+  "name": "picprep-mcp",
+  "version": "1.0.0",
+  "mcpName": "io.github.picprep/picprep-mcp",
+  "description": "Connect any MCP assistant (Claude Code, Codex, Cursor, Antigravity, Devin CLI, OpenCode and others) to the PicPrep desktop app on your computer.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "picprep",
+    "photos",
+    "assistant"
+  ],
+  "license": "MIT",
+  "author": "Tal Afek",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/picprep/picprep-agents.git",
+    "directory": "packages/picprep-mcp"
+  },
+  "homepage": "https://github.com/picprep/picprep-agents#readme",
+  "bugs": {
+    "url": "https://github.com/picprep/picprep-agents/issues"
+  },
+  "type": "commonjs",
+  "main": "bridge.js",
+  "bin": {
+    "picprep-mcp": "bin/picprep-mcp.js"
+  },
+  "files": [
+    "bridge.js",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
