@@ -55,10 +55,7 @@ the whole task, not only while a change is applied. Nothing in the project chang
 calls keep it on, and left alone it clears itself after two minutes: one call at the start and one at the end, not a
 progress report.
 
-**Hand it over, and say only what happened.** Each change's `why` is shown to the person beside it: say why it
-suits these photos or this slide, not what the operation does ("the boats are the stronger opener", not "swap the
-photos"). End with a sentence or two: what you changed or filed, and that it is theirs to keep or reject in their
-window. Report only what the tools answered; when you did not look at the result, say so. After `ask` or
+**One task, one change, and a change is not a message.** Put every post, select and field change of a task in one `propose` (layout and slide ops go one per call); its `why` is one line about the task as a whole, why it suits these photos, not what the ops do ("one standing post, one crouching", not "rename the post, create a post, assign"). The person's inbox holds only what you address to them: anything they should read or answer goes in `ask` or `choose`, never in a `why`. End with a sentence or two: what you changed or filed, and that it is theirs to keep or reject in their window. Report only what the tools answered; when you did not look at the result, say so. After `ask` or
 `choose`, nobody may be at the window: read `get_outcome` without a long `waitSec` and tell them the question is
 waiting there, unless they said they are answering now. A refusal saying a thing is already so is the answer: tell
 them, rather than looking for another way to change it.
@@ -146,7 +143,7 @@ Large payloads are better written to a file and evaluated from there than inline
 Grouping touches several fields at once, so it has named ops you propose instead of hand-writing them:
 `propose {project, why, changes: [{op, args}]}` with `select.group {ids, name, target?, mode?}`,
 `select.ungroup {name}`, `select.removeFromGroup {name, ids}`, `select.swapAlternate {photo, index}` or
-`select.mark {photos, as}` (one per proposal). A photo that is not in the project yet is `photos.add {paths}`:
+`select.mark {photos, as}`, as many as the task needs in one proposal. A photo that is not in the project yet is `photos.add {paths}`:
 only offered; the person sees the files and decides, and nothing is opened before that. A bad id or argument is refused with the reason, and nothing is written.
 
 **Your changes are applied, and reviewable.** A named op, a `set` or a new order is applied at once by PicPrep,
@@ -175,7 +172,7 @@ maybe|cut|none}`, as the person's own keys (`none` only clears Maybe or Cut; a p
 project): a slide the person has shaped goes to that post's Taken out shelf and comes back as it was when the
 photo is put in the post again, so say so when you propose taking out a photo they have already framed. To put photos in a post or take them out without touching anything else, use
 the ops `post.assign {post, photos}` and `post.unassign {post, photos}`; to suggest splitting the shoot into
-posts, `post.create {name}` first (one op per proposal, each with its reason), then assign once it exists.
+posts, propose the `post.create {name, destination?}` ops first, together, then one proposal that assigns (and groups) once they exist.
 Each of those is applied as your change, with your reason: a photo you put in a post shows it as yours on that
 post's chip, which the person keeps or rejects there.
 

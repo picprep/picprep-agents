@@ -83,10 +83,7 @@ the whole task, not only while a change is applied. Nothing in the project chang
 calls keep it on, and left alone it clears itself after two minutes: one call at the start and one at the end, not a
 progress report.
 
-**Hand it over, and say only what happened.** Each change's `why` is shown to the person beside it: say why it
-suits these photos or this slide, not what the operation does ("the boats are the stronger opener", not "swap the
-photos"). End with a sentence or two: what you changed or filed, and that it is theirs to keep or reject in their
-window. Report only what the tools answered; when you did not look at the result, say so. After `ask` or
+**One task, one change, and a change is not a message.** Put every post, select and field change of a task in one `propose` (layout and slide ops go one per call); its `why` is one line about the task as a whole, why it suits these photos, not what the ops do ("one standing post, one crouching", not "rename the post, create a post, assign"). The person's inbox holds only what you address to them: anything they should read or answer goes in `ask` or `choose`, never in a `why`. End with a sentence or two: what you changed or filed, and that it is theirs to keep or reject in their window. Report only what the tools answered; when you did not look at the result, say so. After `ask` or
 `choose`, nobody may be at the window: read `get_outcome` without a long `waitSec` and tell them the question is
 waiting there, unless they said they are answering now. A refusal saying a thing is already so is the answer: tell
 them, rather than looking for another way to change it.
@@ -288,7 +285,7 @@ lists them (`posts: [{id, name, slides, shown}]`) and says which post the slides
 
 - Everything here is about ONE post: pass `post` (its id or name) to `view`, `ask`, `propose` and `show_tab`
   to work on another than the first. A new order (`slides`) names every slide of that post, once.
-- Propose the split itself with the post ops, one per proposal, each with the reason the person will read:
+- Propose the split itself with the post ops, a task's ops in one proposal with one reason for the whole split (create the posts first, then assign once they exist):
   `post.create {name?}`, `post.rename {post, name}`, `post.reorder {order}`, `post.assign {post, photos}` and
   `post.unassign {post, photos}` (photos by id; a photo may be in several posts), `post.moveSlide {slide, to,
   index?, copy?}`, `post.color {post, color}` (any `#rrggbb`, lower-case), `post.delete {post}`, and `post.cover {photo}` (the project thumbnail, the picture on the Projects screen - not the post's cover, which is its first slide; photo null: automatic again; without a choice
@@ -305,7 +302,7 @@ lists them (`posts: [{id, name, slides, shown}]`) and says which post the slides
 ## Named operations: what the person would do on the Board
 
 Besides a whole new order (`slides`), every Board action has a named op you can propose with `propose
-{project, why, changes: [{op, args}]}`, one per proposal, computed by the server exactly as the person's own
+{project, why, changes: [{op, args}]}` (one `slide.*` op per proposal), computed by the server exactly as the person's own
 key or menu computes it: `slide.stack {slide, with}` (two single photos, or a photo joining the stack beside
 it; a before/after, an EXIF card and a split are refused with the reason, and a slide a tool turned into one of those keeps its id, so check its `kind` in `view what:'project'` first), `slide.unstack`, `slide.swapStack`, `slide.split {slide, n, ratio?, ratios?}` (also re-slices a split; `ratio` "W:H" is every slice's shape, `ratios` one per slice, "W:H" or null) and `slide.unsplit`, `slide.blurFit`, `slide.reframe {slides, fit}`,
 `slide.setType {slides, type}`, `slide.makeCard`, `slide.duplicate`, `slide.copyLayout`, `slide.newSlide
