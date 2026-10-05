@@ -90,6 +90,11 @@ them, rather than looking for another way to change it.
   (the whole photo, centred, background around it) or `free` (anywhere, unclamped). A placement saved
   before `place` existed has none; the person's page decides what it behaves like without rewriting
   it, so proposing to an older project never needs `place` set to keep working.
+- To frame a point of a photo - a face, an eye line, a subject - propose `layout.frameOn {slide, cell?, point: [x, y],
+  zoom?}` (point in fractions 0-1 of the photo itself; `cell` left out on a one-photo slide; zoom defaults to the cell's
+  own) instead of working out `cx`/`cy` for each cell's shape. A Confined cell keeps its corners covered, so the point may
+  stop short of the centre; the change's name says so. To check one slide's layout and placements, read `view
+  {what:'project', slide, detail:'full'}` rather than the whole project.
 - The reply reports, per slide, which composition fields the person changed, from and to.
 
 Then hand over. Which tool is active decides what a drag does: with Select (V) the person pans a photo
@@ -134,7 +139,7 @@ or turned photo - the slide's `background` shows. Propose one at `/slides/<id>/b
   px of a 1080-wide slide, 0-200; scale 1-3; grain and dim 0-1).
 - A card's `blur` background can instead follow another slide's own composition (T163/T166): `source:
   {live: slideId}` redraws that slide fresh every time, or `source: {frozen: <its composition>}` keeps
-  a snapshot, independent of it from then on. This is what "Make a card from this slide" sets up; it is
+  a snapshot, independent of it from then on. The EXIF card tool's Background offers it (a slide, live or frozen); it is
   not something to propose for an ordinary photo background.
 - A named preset is stored with its value: `{kind: 'preset', id, name, value}`. The bundled presets
   are offered to the person as options; none is a default, so do not assume one - a slide with no
@@ -175,7 +180,7 @@ tear, curled tear, torn strip, tape; Brush is no longer offered and a proposal o
 torn along the separator: `{kind: 'tear', core: 'none'|'thin'|'wide', shadow: 0-1, seed, roughness?, amplitude? (how far the tear wanders: Wander in Edit),
 paperColor?, flip?}` (`flip: true` puts the second photo on top), `curl` adds `flap` (20-200, the curled-back part),
 `strip` adds `width` (10-300) and what shows in its gap: the slide's background (no `under`), or run the named op
-`layout.stripGap` with `fill: 'colour', color` or `fill: 'photo', photo` (zoom, x, y). An older `paper` style is drawn as a
+`layout.stripGap` with `fill: 'colour', color`, `fill: 'photo', photo` (zoom, x, y) or `fill: 'blend'` (the two photos either side, cross-faded; no photo of its own); a photo or a blend also takes `blur` (0-80, a blend's is 40 unless given) and `haze` (0-1). An older `paper` style is drawn as a
 tear; propose the new kinds. Propose one at `/slides/<id>/seams` (the whole slide), or a single part of it such as `/slides/<id>/seams/width` (the badge shows on the Separators options and section); for one separator only,
 target `/slides/<id>/seamOverrides` with the whole map the first time (JSON Patch needs the object to
 already exist before a single key inside it can be set), and `/slides/<id>/seamOverrides/<seamId>`
@@ -291,9 +296,8 @@ on any number of slides; placing it on another slide never takes it off the one 
 ## Derive: start another kind from a composed slide
 
 Without touching the original, the slide's own menu (Edit view) also offers: *Make a card from this
-slide* (its background is the slide itself, blurred or dimmed like any background - live, so it
-follows the slide, until the person freezes it into a snapshot that no longer does; the gear reads from
-a photo on that slide, picked the same way as any other card - see "Gear cards" below), *Make a
+slide* (it opens the EXIF card tool for that slide: its photo behind the settings read from the photo, and nothing is
+made until the person presses Add slide - see "Gear cards" below), *Make a
 before/after from this slide* (its first two photos, in a new reveal), and *Use as a new collage* (its
 photos placed into a template). *Copy the layout* makes a new collage with the same shape but no
 photos, for filling with different ones. Every one of these is one new slide, right after the
@@ -330,7 +334,7 @@ To propose a slide made with a tool:
 - Inputs are photos and slides of the project only. A file that is not in the project cannot be used: propose
   `photos.add` first and let the person add it.
 - It is applied as your change, marked, which stands unless the person rejects it; what they get is exactly what the dialog
-  makes with the same state. The older ops (`slide.makeBeforeAfter`, `slide.makeCard`, `slide.addTemplate`) still work.
+  makes with the same state. The older ops (`slide.makeBeforeAfter`, `slide.makeCard`, `slide.addTemplate`) still work; `slide.makeCard {slide}` makes the card the EXIF card tool makes for that slide with its defaults, and is refused for a photo with no camera settings (use `slide.toolNew` with `options.fields` then).
 
 ## Empty cells and the repeat warning
 
@@ -352,7 +356,7 @@ keep their ids, so photos stay where they are. To propose the same, use the name
 
 On the Board and in Edit (not while typing): **B** fits a single-photo slide's whole photo over a blurred
 copy of itself (the Frosted values; a reframe with a `preset` background), and **B** again fills the frame
-and takes that background away; **K** makes a gear card right after the slide; **Cmd/Ctrl+D** duplicates.
+and takes that background away; **K** opens the EXIF card tool for the slide (the person chooses its layout and what it shows, then Add slide); **Cmd/Ctrl+D** duplicates.
 Each is one undo step. Right-click on empty Board space offers *New empty slide* and
 *New slide from a template*; on a slide, *Copy the layout (no photos)* and *Save layout as template...*.
 A saved template keeps everything but the photos: layout, frame, separators, frame style, background, photo

@@ -212,7 +212,7 @@ Worth telling them once, because most of it is not discoverable from a static bo
   *Templates*) opens the Template library: a click applies a template to the selected slides, a drag onto the
   Board makes a new slide there. *Before/after* (in the Type menu, or at the top of the Template library) makes a before/after
   wipe from the selected slide's first two photos, or from two selected slides of one photo each. **`B`** shows a
-  single photo whole over a blurred copy of itself, **`K`** makes a gear card after the slide.
+  single photo whole over a blurred copy of itself, **`K`** opens the EXIF card tool for the slide (nothing is made until the person presses Add slide).
 - **History** (a panel) lists every step by name and jumps to any of them, from either view.
 - **`1`** sends a slide to the cover, **`S`** pairs it with the next, **`/`** splits and unsplits,
   **`X`** takes it out, **`Z`** undoes.
@@ -305,10 +305,11 @@ lists them (`posts: [{id, name, slides, shown}]`) and says which post the slides
 Besides a whole new order (`slides`), every Board action has a named op you can propose with `propose
 {project, why, changes: [{op, args}]}` (one `slide.*` op per proposal), computed by the server exactly as the person's own
 key or menu computes it: `slide.stack {slide, with}` (two single photos, or a photo joining the stack beside
-it; a before/after, an EXIF card and a split are refused with the reason, and a slide a tool turned into one of those keeps its id, so check its `kind` in `view what:'project'` first), `slide.unstack`, `slide.swapStack`, `slide.takeOut {slide}` (to the Taken out shelf), `slide.split {slide, n, ratio?, ratios?}` (also re-slices a split; `ratio` "W:H" is every slice's shape, `ratios` one per slice, "W:H" or null) and `slide.unsplit`, `slide.blurFit`, `slide.reframe {slides, fit}`,
+it; any two one-photo slides stack, next to each other or not: the stack takes the earlier one's place and the slides
+between them stay; a before/after, an EXIF card and a split are refused with the reason, and a slide a tool turned into one of those keeps its id, so check its `kind` in `view what:'project'` first), `slide.unstack`, `slide.swapStack`, `slide.takeOut {slide}` (to the Taken out shelf), `slide.split {slide, n, ratio?, ratios?}` (also re-slices a split; `ratio` "W:H" is every slice's shape, `ratios` one per slice, "W:H" or null) and `slide.unsplit`, `slide.blurFit`, `slide.reframe {slides, fit}`,
 `slide.setType {slides, type}`, `slide.makeCard`, `slide.duplicate`, `slide.copyLayout`, `slide.newSlide
 {template, after?}`, `slide.applyTemplate {slides, template}` and `slide.addTemplate {template, after?, photos?}` (ids
-from `view what:'templates'`), `slide.pullPhoto {slide, cell}`, `slide.putPhoto {slide, cell, photo, from?}` (`from`: the photo's own one-photo slide, removed, as dragging that card into an empty cell does) and `slide.pasteLook {from, slides, parts?}` (the
+from `view what:'templates'`), `slide.pullPhoto {slide, cell}`, `slide.putPhoto {slide, cell, photo, from?}` (`from`: the photo's own one-photo slide, removed, as dragging that card into an empty cell does; a photo of the project the post does not hold yet joins the post in the same change, and Reject takes both back) and `slide.pasteLook {from, slides, parts?}` (the
 parts of one slide's look - layout, separators, frameStyle, background, effects, cells, windows, placement, framing; without
 `parts`, all but framing; never photos - onto others, as the person's Copy look / Paste look does;
 `slide.pasteLookNew {from, after?, parts?}` adds an empty slide with that look instead, as the person's
