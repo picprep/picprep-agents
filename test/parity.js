@@ -169,10 +169,10 @@ async function live() {
     // waitSec 6: the app holds the call that long, since nobody reviews the change here (longer than the 5 s after which Node's shared HTTP agent drops a quiet connection).
     const outcome = (await c.tool('get_outcome', { project: opened.id, proposalId: proposed.proposalId, waitSec: 6 })).data || {};
     const change = (outcome.changes || [])[0] || {};
-    check(change.state === 'applied' && outcome.answered === false, 'the change is applied, and waits for the person to keep or reject it', outcome);
+    check(change.state === 'applied' && outcome.answered === false, 'the change is applied (it stands unless the person rejects it)', outcome);
     const after = (await c.tool('view', { what: 'project', project: opened.id })).data || {};
     check((after.photos || []).some(p => p.id === photos[0].id && p.verdict === 'maybe'), 'the project shows it (the photo is marked Maybe)');
-    check(after.assistant && same(after.assistant.unreviewed.map(u => u.id), [change.id]), 'and lists it as the assistant\'s change, not yet reviewed', after.assistant);
+    check(after.assistant && (after.assistant.recent || []).some(u => u.id === change.id) && after.assistant.applied >= 1, 'and lists it among the assistant\'s recent changes (it stands unless the person rejects it)', after.assistant);
     const full = (await c.tool('view', { what: 'project', project: opened.id, detail: 'full' })).data || {};
     const stored = (full.changes || []).find(x => x.id === change.id) || {};
     check(stored.why === why, 'the stored change carries the assistant\'s reason', stored);
@@ -218,7 +218,7 @@ async function live() {
       check(r.error && /^PicPrep needs a subscription or an active trial \(.+\)\. Only the person can enter one, in Settings → Licence\.$/.test(r.text), 'viewing only: ' + name + ' says a subscription or trial is needed, and that only the person can enter one', r);
     }
     const still = await c.tool('view', { what: 'project', project: opened.data.id });
-    check(still.data && still.data.photos.every(p => p.verdict === 'untouched') && !still.data.assistant.unreviewed.length, 'and nothing in the project changed');
+    check(still.data && still.data.photos.every(p => p.verdict === 'untouched') && !still.data.assistant.applied && !(still.data.assistant.waiting || []).length, 'and nothing in the project changed');
     await c.close();
     await app.stop();
   }

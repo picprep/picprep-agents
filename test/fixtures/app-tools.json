@@ -26,7 +26,8 @@
         "path",
         "since",
         "level",
-        "detail"
+        "detail",
+        "slide"
       ],
       "required": [
         "what"
