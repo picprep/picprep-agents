@@ -98,8 +98,9 @@ original); the card says when it differs.
 ## Several posts
 
 Each post has its own export settings, and with more than one post each is written into a folder named after
-it inside the destination. The dialog exports the post on screen; "Export all posts" in its title bar writes
-every post in turn. Both are the person's to press. To read or suggest another post's settings than the
+it inside the destination. The dialog exports the post on screen; "Export all posts…" in its title bar opens a
+plan listing every post with its own preset, slides, size and folder, and writes nothing until the person confirms
+it. Both are the person's to press. To read or suggest another post's settings than the
 first's, pass `post` to `view`, `ask` and `propose`.
 
 ## Driving it as an assistant
@@ -123,7 +124,8 @@ them, rather than looking for another way to change it.
 
 - **Settings:** propose `set` targets under `/export`, such as `/export/preset` (a preset id from
   `GET /api/presets`; the old per-ratio Instagram ids still resolve to `instagram`), `/export/overrides` (`{fit, w, h, longEdge, format, quality, maxBytes, sharpen,
-  metadata}`), `/export/dest` (`{mode: 'folder' | 'beside', path, subfolder}`) and `/export/onExist`.
+  metadata}`), `/export/dest` (`{mode: 'folder' | 'beside', path, subfolder}`; an empty `path` is the project's own
+  folder, in `subfolder`; the folder is one for the whole project, so suggest it once, not per post) and `/export/onExist`. The view state's `export.folder` is the absolute folder in force.
 - Each change shows as a blue chip on the row it touched (`/export/overrides/quality` on Format,
   `.../sharpen` on Sharpening, `/export/dest` on Folder, and so on), whether the row is open or shut.
 - **One slide differently:** `/slides/<id>/export` with `{preset}` (the slide's own preset, which the person
