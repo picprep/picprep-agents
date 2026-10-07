@@ -76,6 +76,7 @@ function connector(home) {
   const env = Object.assign({}, process.env, { PICPREP_HOME: home, PICPREP_APP: path.join(home, 'no-app') });
   delete env.PHOTOPREP_HOME; delete env.PHOTOPREP_APP;   // the older names: only one of each may be set
   const child = spawn(process.execPath, [BIN], { env, stdio: ['pipe', 'pipe', 'pipe'] });
+  children.add(child); child.on('exit', () => children.delete(child));
   const waiting = new Map();
   let seq = 0, stderr = '';
   child.stderr.on('data', d => { stderr += d; });
@@ -100,11 +101,17 @@ function connector(home) {
   return { rpc, tool, stderr: () => stderr, close: () => new Promise(r => { child.on('exit', r); child.stdin.end(); }) };
 }
 
+// Every process this test starts ends with it, whether it passed, failed or crashed (no test process is left running).
+const children = new Set();
+process.on('exit', () => { for (const c of children) c.kill(); });
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(sig, () => process.exit(130));
+
 // The app's real server in its own process, on a throwaway home (test/lib/real-app.js).
 function realApp(home, licence) {
   const env = Object.assign({}, process.env, { PICPREP_HOME: home, PICPREP_LICENSE_URL: 'http://127.0.0.1:9' });
   delete env.PHOTOPREP_HOME; delete env.PHOTOPREP_LICENSE_URL;
-  const child = spawn(process.execPath, [path.join(__dirname, 'lib', 'real-app.js'), src, licence], { env, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, [path.join(__dirname, 'lib', 'real-app.js'), src, licence], { env, stdio: ['pipe', 'pipe', 'pipe'] });
+  children.add(child); child.on('exit', () => children.delete(child));
   let err = '';
   child.stderr.on('data', d => { err += d; });
   return new Promise((resolve, reject) => {
