@@ -120,7 +120,7 @@ memory and need checking on the day.
 | PulseMCP, Glama, Smithery, mcp.so | community catalogues; most pick a server up from the MCP Registry or a short form | no |
 
 Every listing's text must say what the README says and no more: a desktop app is required, nothing leaves the
-computer, and the assistant cannot keep its own changes, approve, export, delete or change settings.
+computer, and the assistant cannot approve, export, delete or change settings.
 
 ## The assistants' notes: what was checked
 

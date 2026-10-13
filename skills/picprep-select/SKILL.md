@@ -43,8 +43,8 @@ a tall full-scene shot frequently "feels" wide, and it decides what's possible l
 ## Put it in front of them: a project, an ask, a reply
 
 PicPrep keeps a **project** per folder, and the person works in its app. Your changes (`propose`) are
-**applied at once**, marked as yours with your reason, whether or not they are watching; they keep,
-reject, edit on top or comment on each. You talk to them through **questions** (`ask` for an answer in
+**applied at once**, marked as yours with your reason, whether or not they are watching; each stands unless they
+reject it; they may also edit on top or comment. You talk to them through **questions** (`ask` for an answer in
 their words, `choose` for options): pinned to a tab, never blocking them, answered when they like. You
 never answer for them, and you never need to watch the page.
 
@@ -66,8 +66,8 @@ With the PicPrep MCP tools (the plugin registers them):
 2. `view {project, what: 'notes'}` first when they have already worked in Select: their Maybe/Cut, scores,
    tags and notes are theirs, and your sheet should not redo what they already decided.
 3. `propose {project, tab: 'select', why, set}` with the review sheet described below. It is applied at
-   once and marked as yours (`{proposalId, changes: [{id, state: 'applied'}]}`); they keep it, reject it
-   or change it:
+   once and marked as yours (`{proposalId, changes: [{id, state: 'applied'}]}`); each stands unless they reject
+   it; they may also change it:
 
    ```js
    { why: 'first pass: 20 of 46', set: [{ target: '/select',
@@ -79,7 +79,7 @@ With the PicPrep MCP tools (the plugin registers them):
    never interrupts them. You get `{askId}`.
 5. `get_outcome {project, askId, waitSec: 600}`. Call it again while it returns `{pending: true}`;
    people take their time, and that is the point. `get_outcome {project, proposalId}` tells you whether
-   they kept or rejected the sheet, and brings their comments on it.
+   the sheet still stands or they rejected it, and brings their comments on it.
 6. Read the reply (below). To check on a pass still in progress, `view {project, what: 'tab', tab: 'select'}`
    gives the live verdicts. Fetch the whole project (`view what:'project'`) only when you need something the
    reply does not carry.
@@ -157,8 +157,8 @@ have not reviewed. They may work at the same time as you: keep going on what the
 deleting a project or a post, restoring a version, adding photos, jumping the History, reapplying a kept edit and
 picking marks by contrast are only *offered*, unless their Settings (Assistant > What it may do) let you: then
 `propose` answers `auto` and their window does it, or a post's delete is an ordinary change. Deleting the project
-and throwing away a kept edit always wait for them. Approving or ruling a slide, its note and comment, keeping or
-rejecting your changes, answering your own questions, exporting, Settings, presets and sending a report are refused.
+and throwing away a kept edit always wait for them. Approving or ruling a slide, its note and comment, rejecting
+your changes, answering your own questions, exporting, Settings, presets and sending a report are refused.
 Asked for one of those, say plainly that only they can, and point them there (`show_tab`). Whether to change
 something at all is your judgement; when it is theirs to decide, `ask` (their words) or `choose` (options).
 

@@ -2,8 +2,8 @@
 
 Connect your assistant to [PicPrep](https://getpicprep.com), the desktop app that prepares photos for posting. With
 it, an assistant can open your projects, look at them, ask you questions in the app and make changes. Each change is
-applied by PicPrep, marked as the assistant's with its reason, and waits for you to keep or reject it. The judgement
-stays yours: the assistant cannot keep its own changes, answer its own questions, approve a slide, export, delete or
+applied by PicPrep, marked as the assistant's with its reason, and stands unless you reject it. The judgement
+stays yours: the assistant cannot answer its own questions, approve a slide, export, delete or
 change your settings.
 
 This repository holds:
@@ -52,7 +52,7 @@ a definition: the app's own descriptions and schemas are what the assistant sees
 | `ask` | Asks you what only you can judge, instead of guessing; you answer in your own words, when you like. |
 | `choose` | Offers you options to pick from. |
 | `propose` | Changes the project through PicPrep's named operations (what a button, key or drag does). Applied at once, marked as the assistant's; a few, like deleting, are only offered for you to do. |
-| `get_outcome` | Reads what you did: your answer, or whether you kept, rejected or commented on a change. |
+| `get_outcome` | Reads what you did: your answer, or a change's state (applied, held while its edits are paused, rejected) and any comments you made on it. |
 | `withdraw` | Takes back its own open question, or its changes you have not reviewed yet. |
 | `status` | Shows in your window that it is at work, from before its first change until it is done. Nothing in the project changes. |
 

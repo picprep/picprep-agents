@@ -80,7 +80,7 @@ With the PicPrep MCP tools (the plugin registers them):
    them to Watermark with your question in their Questions inbox.
 3. `get_outcome {project, askId, waitSec: 600}`, again while it returns `{pending: true}`. The reply
    carries every slide's `mark` as it ended up, so compare it with what you proposed; `get_outcome
-   {project, proposalId}` says which marks they kept or rejected, and brings their comments.
+   {project, proposalId}` says which marks stand or were rejected, and brings their comments.
 
 **Without the MCP tools**, the same calls are plain HTTP to the running app (`state/server.json` in
 PicPrep's user directory names the port and token; send it as the `pp_token` cookie or an
@@ -125,8 +125,8 @@ have not reviewed. They may work at the same time as you: keep going on what the
 deleting a project or a post, restoring a version, adding photos, jumping the History, reapplying a kept edit and
 picking marks by contrast are only *offered*, unless their Settings (Assistant > What it may do) let you: then
 `propose` answers `auto` and their window does it, or a post's delete is an ordinary change. Deleting the project
-and throwing away a kept edit always wait for them. Approving or ruling a slide, its note and comment, keeping or
-rejecting your changes, answering your own questions, exporting, Settings, presets and sending a report are refused.
+and throwing away a kept edit always wait for them. Approving or ruling a slide, its note and comment, rejecting
+your changes, answering your own questions, exporting, Settings, presets and sending a report are refused.
 Asked for one of those, say plainly that only they can, and point them there (`show_tab`). Whether to change
 something at all is your judgement; when it is theirs to decide, `ask` (their words) or `choose` (options).
 
