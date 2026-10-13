@@ -41,6 +41,8 @@ person tells you where the post is going: the Board's warnings follow it too.
 
 - **Keeping the files, or not sure where they will go:** Original quality. It is full size, never
   enlarged, and keeps the metadata (orientation reset, location optional).
+- **Hand changes are remembered per preset on that computer** (quality, format, size and so on): the next
+  project on the same preset opens with them, and "Reset to defaults" in Export clears them.
 - **A preset decides resolution and file settings, never shape.** Every slide and photo is written in its
   own shape; the shape is decided in Compose, where the Board warns when it does not suit the post's main
   destination. No preset crops, pads or refuses a shape.
@@ -89,8 +91,10 @@ original); the card says when it differs.
   The only way to enlarge is the person's own tick, "Fill the platform size anyway (enlarges small
   photos)" under Change size (`/export/enlarge`, default `false`). Platforms show enlarged pictures
   softer, not sharper, so do not propose it unless the person asks for an exact pixel size.
-- **Existing files are kept.** A new file is renamed (`name_1.jpg`) unless the person chooses
-  Overwrite.
+- **Existing files are kept.** By default every export after the first goes into a new folder beside the
+  usual one, `export_1`, `export_2`, with every file under its own name ("A new folder each time",
+  `/export/onExist`: `folder`). The person can choose "Keep both, rename the new one" (`keep`: same folder,
+  `name_1.jpg`) or Overwrite (`overwrite`).
 - A split exports as `name_1 … name_n`, in posting order. A gear card is drawn afresh at the size asked
   (its full resolution is its own frame size), so a larger size is never a stretched picture. A preset with a
   file-size target writes JPEG, also for a PNG source; choosing PNG with a size target is flagged.
@@ -124,7 +128,7 @@ them, rather than looking for another way to change it.
 
 - **Settings:** propose `set` targets under `/export`, such as `/export/preset` (a preset id from
   `GET /api/presets`; the old per-ratio Instagram ids still resolve to `instagram`), `/export/overrides` (`{fit, w, h, longEdge, format, quality, maxBytes, sharpen,
-  metadata}`), `/export/dest` (`{mode: 'folder' | 'beside', path, subfolder}`; an empty `path` is the project's own
+  metadata}`), `/export/dest` (`{mode: 'folder', path, subfolder}`; an empty `path` is the project's own
   folder, in `subfolder`; the folder is one for the whole project, so suggest it once, not per post) and `/export/onExist`. The view state's `export.folder` is the absolute folder in force.
 - Each change shows as a blue chip on the row it touched (`/export/overrides/quality` on Format,
   `.../sharpen` on Sharpening, `/export/dest` on Folder, and so on), whether the row is open or shut.

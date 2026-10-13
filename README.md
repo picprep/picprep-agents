@@ -100,7 +100,6 @@ The assistant is told in plain words too, and can tell you:
 ```sh
 npm test                     # plain Node, no packages
 npm run build:mcpb           # dist/picprep.mcpb
-node scripts/sync-skills.js  # copy skills/ from a checkout of the app next to this one
 node test/parity.js --write  # record the app's tools again after they changed
 node eval/eval.js labels     # the assistant eval's tasks and labels (EVAL.md says how it was run, and what it cost)
 ```
@@ -111,13 +110,13 @@ nothing here names a person or a private place, and `test/parity.js` that the to
 are the app's.
 
 With a checkout of the app beside this repo (a folder called `picprep`, or `PICPREP_SRC`), the tests also compare
-with the app itself: the connector's user folder is the app's on every OS, `skills/` matches the app's, and the
+with the app itself: the connector's user folder is the app's on every OS, and the
 connector is run against the app's real server (no window, a throwaway user folder): it must list the app's tools
 unchanged, every tool is called once, and each refusal a new user meets must be a plain sentence. Without the
 checkout those checks say they were skipped. The app's source is not public; PicPrep's maintainers run them.
 
-A skill describes tools the app serves: when a PicPrep release changes a tool, the skill that drives it changes in
-the same release. Every manifest (`.claude-plugin/`, `.codex-plugin/`, `gemini-extension.json`, `mcpb/manifest.json`)
+The skills live here and are edited here. A skill describes tools the app serves: when a change to a PicPrep tool
+affects what a skill says, the skill is changed here for the same app release. Every manifest (`.claude-plugin/`, `.codex-plugin/`, `gemini-extension.json`, `mcpb/manifest.json`)
 and `packages/picprep-mcp/server.json` carries the `picprep-mcp` version; bump them together. [PUBLISHING.md](PUBLISHING.md)
 says how a release goes out.
 

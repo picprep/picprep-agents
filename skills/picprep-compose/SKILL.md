@@ -100,11 +100,11 @@ them, rather than looking for another way to change it.
 Then hand over. Which tool is active decides what a drag does: with Select (V) the person pans a photo
 in its cell and zooms it at the cursor; with Hand (H, or Space held) a drag moves only the view; resting
 on a tool in the strip for a second shows what it does. They also hold R and drag to rotate (Shift for 15°
-steps), flips, drags separators (right-click one to remove it, straighten it, bend it, or lock it), swaps photos between cells (Ctrl-drag, Cmd-drag on macOS, out of the cell; or Alt-drag or Alt+arrow), and undoes freely.
+steps), flips, drags separators (right-click one to remove it, straighten it, bend it, or lock it), swaps photos between cells (Ctrl-drag, Cmd-drag on macOS, out of the cell; or Alt-drag or Alt+Shift+arrows), and undoes freely.
 
 ### The ask, step by step
 
-1. `open_project {folder: <absolute path>}` → `{id, windows}` (the same folder is always the same project, and the person's window switches to it; `windows: 0` means none is open yet);
+1. `open_project {folder: <absolute path>}` → `{id, windows}` (the same folder is always the same project, and the person's window switches to it; `windows: 0` means none is open yet; a window that already has the project open stays on the stage the person is on unless they follow you, so use `show_tab` to bring them somewhere);
    `view {project, what: 'project'}` lists the slides and each photo's `id` and `path`.
 2. `view {project, what: 'notes'}` before changing a slide they have worked on or commented.
 3. `propose {project, tab: 'compose', why, set: [{target, value}]}` (or a named op, below), then, when you want their
@@ -277,11 +277,30 @@ split, circle, push, slide, fade, zoom - only wipe, soft, split, push and slide 
 edge's blend width: wipe 0-400, default 0 a hard edge; soft 1-400, default 80; no other transition takes it - and
 the divider `line` is drawn for wipe only, never for soft), `flow` (smooth, steady, in, out), `holdAfterMs` and `line.knob`; `view what:"tools"`
 gives the ranges - or propose `slide.toolNew` / `slide.toolApply` with the reveal tool rather than writing these; `outputs` is any of `'mp4'`, `'gif'` and `'webm'` - MP4 is what
-Instagram takes in a carousel, not GIF; WebM is for a computer that cannot make MP4). `sharedFraming` is on by default: `after` then takes
+Instagram takes in a carousel, not GIF; WebM is for a computer that cannot make MP4). `lock` (only with `sharedFraming` false) says the two photos are framed apart but moved as one in Edit; it changes nothing in what is drawn. `sharedFraming` is on by default: `after` then takes
 `before`'s zoom, centre, angle, flip and `place`, so set `before`'s framing and leave `after`'s alone;
 set it false to frame the two apart. A reveal has no cells or single placement of its own; setting
 `kind: 'reveal'` on a slide means before/after/reveal instead. The person edits it in the Reveal panel
 and can play the loop live before exporting - what plays there is exactly what gets written.
+
+**Framing the two photos: `slide.frameBeforeAfter`.** Rather than writing placements, use the op the Reveal panel's
+own controls run: `{slide, photo?, lock?, placement?, size?, zoom?, turn?, move?, match?, cover?}`, any of them, run
+in that order as one change.
+
+- `size: 'fit'` shows the whole photo (a landscape photo on a 4:5 slide is cut to about half by default; say so and
+  offer this rather than deciding it); `'fill'` covers the slide again; `'reset'` puts both back, centred and framed
+  alike.
+  A fitted photo can still be moved inside the slide (`move`), up and down when it is wider than the slide, across
+  when it is taller. What shows around it is the slide's background: with the Before/after tool (`slide.toolNew`,
+  `slide.toolApply`), the state's `background` (for example `{kind: 'solid', color: '#202020'}`; absent: black).
+- Two different shots that do not line up: `lock: false`, then frame `photo: 'after'` (`placement: 'free'`, `move`,
+  `zoom`, `turn`), or give `match`: four points in fractions of the slide, a thing in the before photo, the same thing
+  in the after photo, a second thing in before, the same in after (look at a screenshot of each first; two points far
+  apart). `match` locks the two. `lock: true` afterwards moves them as one, so reframing keeps them lined up.
+- `cover: true` zooms both until neither leaves the slide bare. A fitted or moved photo shows the slide's background
+  around it: with none set that is black, so set a background (a blur suits) or cover.
+- `photo` matters only while they are unlocked; locked, both are framed. Confined and Fit are refused for a locked
+  pair with the reason: unlock, or use `size`.
 
 ## Reuse: duplicate a slide
 

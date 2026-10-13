@@ -13,7 +13,7 @@ PicPrep 1.0.0 is released. Nothing here has been done: the repository is private
 - `picprep.mcpb` (`npm run build:mcpb`): `manifest.json`, `icon.png`, `server/index.js`, `server/bridge.js`,
   `server/package.json`, `server/LICENSE`. Built and unpacked on 2026-10-05, its `server/index.js` answered
   initialize, listed the 11 tools and called two of them against the app of `release-fixes`.
-- The skills, tool list and texts match the app's `release-fixes` branch: `PICPREP_SRC=<that checkout> npm test`
+- The tool list and texts match the app's `release-fixes` branch: `PICPREP_SRC=<that checkout> npm test`
   passes (bridge, plugin, names, parity).
 - A fresh history: the local branch `public-main` is ONE commit of this tree, authored
   `Tal Afek <noreply@getpicprep.com>`, never pushed. It is rebuilt from `main` with the commands in step 2 whenever
@@ -99,9 +99,9 @@ one-command install against the public repository (`claude plugin marketplace ad
 `gemini extensions install https://github.com/picprep/picprep-agents`, the Cursor link): none could be tried
 while it was private.
 
-**Afterwards, in the app** (`picprep`, task T059 of `specs/005-licensing-distribution/tasks.md`): remove
+**Afterwards, in the app** (done 2026-10-13; `picprep`, task T059 of `specs/005-licensing-distribution/tasks.md`): remove
 `skills/`, `.claude-plugin/` and their `files` and test entries, and update its `CLAUDE.md` "The plugin". The
-skills here are then the only copies; `scripts/sync-skills.js` and the comparison in `test/plugin.js` go.
+skills here are now the only copies, edited here; the sync script and the comparison in `test/plugin.js` are gone.
 
 ## Directories worth a listing (after step 8)
 

@@ -158,19 +158,6 @@ for (const dir of skills) {
   check(fields.description && fields.description.length > 120, dir + ': description is substantial');
   check(text.slice(m[0].length).trim().length > 400, dir + ': has a body');
 }
-// Until the app repo hands its skills over for good, the copies here must not drift from it
-// (a skill and the tool it drives stay in step).
-{
-  const app = require('./lib/app-src').appSrc(), src = app && path.join(app, 'skills');
-  if (src && fs.existsSync(src)) {
-    const theirs = fs.readdirSync(src).filter(d => fs.existsSync(path.join(src, d, 'SKILL.md')));
-    check(same(theirs.sort(), skills.slice().sort()), 'the same skills as the app repo\'s skills/', { here: skills, app: theirs });
-    for (const d of theirs.filter(x => skills.includes(x))) {
-      check(fs.readFileSync(path.join(src, d, 'SKILL.md'), 'utf8') === fs.readFileSync(path.join(skillsDir, d, 'SKILL.md'), 'utf8'), d + ' is the same as the app repo\'s (copy it over: node scripts/sync-skills.js)');
-    }
-  } else console.log('  --   no app checkout with skills beside this repo: the copies here are the only ones');
-}
-
 // --- docs: one page per harness, every snippet valid ----------------------------------------------------
 const HARNESSES = ['claude-code', 'claude-desktop', 'codex', 'cursor', 'antigravity', 'gemini-cli', 'vscode', 'devin-cli', 'opencode', 'oh-my-pi', 'windsurf', 'zed', 'cline', 'goose'];
 const readme = fs.readFileSync(rel('README.md'), 'utf8');
