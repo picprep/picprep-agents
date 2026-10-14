@@ -187,7 +187,7 @@ already exist before a single key inside it can be set), and `/slides/<id>/seamO
 once it does. The person can also right-click a separator (any tool) to give it its own style, and
 re-roll any seeded style
 (a torn style, tape, or a torn path) for a different random edge. A gap and a fade take the straight
-path only - they cut and blend the separator itself rather than drawing over it. Every style follows a separator the person has bent or drawn freehand (a layout of `type: 'map'`, which may also hold circles and framed cells in its `shapes`) just as it does a straight one; do not rewrite `/slides/<id>/layout` of such a slide. A gap may cast a soft shadow under the photos: `shadow: {blur, offset, opacity}` on the gap style (blur 0-60 and offset 0-40 in pixels of a 1080-wide slide, opacity 0-1). None of this is a taste
+path only. On a wave, zigzag or torn path the two photos meet along that path itself, with the line centred on it; `amplitude` (0-60, pixels of a 1080-wide slide) is how deep it goes (Height in Edit; Wander for a torn path) and `wavelength` (20-400) how long each wave is. Every style follows a separator the person has bent or drawn freehand (a layout of `type: 'map'`, which may also hold circles and framed cells in its `shapes`) just as it does a straight one; do not rewrite `/slides/<id>/layout` of such a slide. A gap may cast a soft shadow under the photos: `shadow: {blur, offset, opacity}` on the gap style (blur 0-60 and offset 0-40 in pixels of a 1080-wide slide, opacity 0-1). None of this is a taste
 call to make unprompted: suggest a treatment when it serves the post (a torn edge for a scrapbook
 feel, tape for a collage), never as decoration for its own sake.
 
