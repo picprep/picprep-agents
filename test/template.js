@@ -61,6 +61,15 @@ for (const f of ['.claude/settings.json', '.codex/hooks.json']) {
   } catch (e) { bad(f + ': ' + e.message); }
 }
 
+// Codex does not expand @imports, so its hook prints exactly the always-loaded files; Claude Code loads them
+// through CLAUDE.md, so its hook prints nothing (a second copy would be read twice).
+try {
+  const cmd = JSON.parse(read('.codex/hooks.json')).hooks.SessionStart[0].hooks[0].command;
+  check(cmd === 'cat ' + ALWAYS.join(' '), '.codex/hooks.json prints exactly the four always-loaded files', cmd);
+  const cl = JSON.parse(read('.claude/settings.json')).hooks.SessionStart[0].hooks[0].command;
+  check(cl === 'true', '.claude/settings.json hook prints nothing (Claude Code imports the files itself)', cl);
+} catch (e) { bad('hook commands: ' + e.message); }
+
 // Everything under template/ is walked by the private-names check (it reads every file in the repo).
 const names = spawnSync(process.execPath, [path.join(__dirname, 'names.js')], { encoding: 'utf8' });
 check(names.status === 0, 'test/names.js passes with the template in place', names.stdout.split('\n').filter(l => /FAIL/.test(l)));

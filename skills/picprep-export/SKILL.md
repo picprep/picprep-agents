@@ -132,6 +132,10 @@ them, rather than looking for another way to change it.
   folder, in `subfolder`; the folder is one for the whole project, so suggest it once, not per post) and `/export/onExist`. The view state's `export.folder` is the absolute folder in force.
 - Each change shows as a blue chip on the row it touched (`/export/overrides/quality` on Format,
   `.../sharpen` on Sharpening, `/export/dest` on Folder, and so on), whether the row is open or shut.
+- **Caption and alt text:** you may fill the post's caption and each slide's alt text, and tick "Save the caption as
+  CAPTION.txt" and "Save the alt text as ALT_TEXT.txt", as suggestions: `/export/caption`, `/export/captionFile`,
+  `/export/altFile` and `/slides/<id>/alt`. The files are written beside the exported photos. They stand unless the
+  person rejects them, and only they press Export.
 - **One slide differently:** `/slides/<id>/export` with `{preset}` (the slide's own preset, which the person
   opens from that slide in the plan) or `{skip: true}` (its include box unticked).
 - **Taking a batch change back:** the dialog's own Undo and Redo only step through the person's edits there, so there

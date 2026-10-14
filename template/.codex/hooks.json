@@ -3,7 +3,7 @@
     "SessionStart": [
       {
         "matcher": "startup|compact",
-        "hooks": [{ "type": "command", "command": "true" }]
+        "hooks": [{ "type": "command", "command": "cat memory/about.md memory/preferences.md memory/how-you-work.md memory/recent.md" }]
       }
     ]
   }
