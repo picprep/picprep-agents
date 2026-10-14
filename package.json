@@ -6,7 +6,7 @@
   "license": "MIT",
   "author": "Tal Afek",
   "scripts": {
-    "test": "node test/bridge.js && node test/plugin.js && node test/names.js && node test/parity.js",
+    "test": "node test/bridge.js && node test/plugin.js && node test/names.js && node test/template.js && node test/parity.js",
     "build:mcpb": "node scripts/build-mcpb.js"
   },
   "engines": {
