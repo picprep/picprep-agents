@@ -316,6 +316,77 @@ async function main() {
       await b.close();
     } finally { b.kill(); killLaunched(home); }
   }
+
+  // --- 8. the client's folders (roots) reach the app, and nothing else is delayed ---------------------------
+  {
+    const home = tmpHome();
+    const app = await startFakeApp({ home });
+    const WITH = Object.assign({}, INIT, { capabilities: { roots: { listChanged: true } } });
+    const b = bridge({ PICPREP_HOME: home });
+    await b.call(1, 'initialize', WITH);
+    check(!b.got.some(m => m.method === 'roots/list'), 'no roots/list before the client says it is initialized');
+    b.send({ method: 'notifications/initialized' });
+    const ask = await b.next(m => m.method === 'roots/list');
+    check(ask && typeof ask.id === 'string' && /^pp-roots-/.test(ask.id) && ask.id !== 1, 'a client with roots is asked roots/list, under an id of the bridge\'s own', ask);
+    b.send({ id: ask.id, result: { roots: [{ uri: 'file:///work/dana', name: 'dana' }, { uri: 'file:///other' }] } });
+    for (let i = 0; i < 100 && !app.log.some(e => e.method === 'notifications/picprep/roots'); i++) await new Promise(r => setTimeout(r, 50));
+    const told = app.log.filter(e => e.method === 'notifications/picprep/roots');
+    check(told.length === 1 && same(told[0].params, { roots: [{ uri: 'file:///work/dana', name: 'dana' }, { uri: 'file:///other' }] }), 'the app is told the roots in a notification', told);
+    const sess = app.log.find(e => e.method === 'initialize') && app.log.find(e => e.method === 'notifications/initialized').session;
+    check(told[0] && told[0].session === sess && told[0].id === undefined, 'on the same session, as a notification', told);
+    check(!app.log.some(e => e.method === 'reply'), 'the client\'s reply was not forwarded to the app', app.log.map(e => e.method));
+    // The client's list changes: asked again, the app told again.
+    b.send({ method: 'notifications/roots/list_changed' });
+    const again = await b.next(m => m.method === 'roots/list' && m.id !== ask.id);
+    check(again && again.id === 'pp-roots-2', 'roots/list_changed asks again', again);
+    b.send({ id: again.id, result: { roots: [{ uri: 'file:///work/new' }] } });
+    for (let i = 0; i < 100 && app.log.filter(e => e.method === 'notifications/picprep/roots').length < 2; i++) await new Promise(r => setTimeout(r, 50));
+    const two = app.log.filter(e => e.method === 'notifications/picprep/roots');
+    check(two.length === 2 && same(two[1].params, { roots: [{ uri: 'file:///work/new' }] }), 'and the app gets the new roots', two);
+    check(!app.log.some(e => e.method === 'notifications/roots/list_changed'), 'the bridge keeps the list_changed notice to itself', app.log.map(e => e.method));
+    await b.close();
+    await app.stop();
+  }
+  {
+    const home = tmpHome();
+    const app = await startFakeApp({ home });
+    const b = bridge({ PICPREP_HOME: home });
+    await b.call(1, 'initialize', INIT);
+    b.send({ method: 'notifications/initialized' });
+    b.send({ method: 'notifications/roots/list_changed' });
+    await b.call(2, 'tools/list');
+    await new Promise(r => setTimeout(r, 300));
+    check(!b.got.some(m => m.method === 'roots/list') && !app.log.some(e => e.method === 'notifications/picprep/roots'), 'a client without the roots capability is asked nothing and the app is told nothing', app.log.map(e => e.method));
+    await b.close();
+    await app.stop();
+  }
+  {
+    // A client that never answers roots/list: forwarded calls are not held up, and nothing more happens.
+    const home = tmpHome();
+    const app = await startFakeApp({ home });
+    const b = bridge({ PICPREP_HOME: home });
+    await b.call(1, 'initialize', Object.assign({}, INIT, { capabilities: { roots: {} } }));
+    b.send({ method: 'notifications/initialized' });
+    await b.next(m => m.method === 'roots/list');
+    const t0 = Date.now();
+    const echo = await b.call(2, 'tools/call', { name: 'echo', arguments: { q: 1 } });
+    check(echo && echo.result && Date.now() - t0 < 2000, 'a slow client does not delay a forwarded tools/call', Date.now() - t0);
+    await new Promise(r => setTimeout(r, 5500));
+    check(!app.log.some(e => e.method === 'notifications/picprep/roots'), 'no answer within 5 s: the app is told nothing', app.log.map(e => e.method));
+    const after = await b.call(3, 'tools/call', { name: 'echo', arguments: { q: 2 } });
+    check(after && after.result, 'and the bridge carries on', after);
+    b.send({ id: 'pp-roots-1', result: { roots: [{ uri: 'file:///late' }] } });   // too late: ignored, and not forwarded
+    await new Promise(r => setTimeout(r, 300));
+    check(!app.log.some(e => e.method === 'reply' || e.method === 'notifications/picprep/roots'), 'a late reply is dropped, not forwarded', app.log.map(e => e.method));
+    // An error reply: nothing more.
+    b.send({ method: 'notifications/roots/list_changed' });
+    const ask2 = await b.next(m => m.method === 'roots/list' && m.id === 'pp-roots-2');
+    b.send({ id: ask2.id, error: { code: -32601, message: 'no' } });
+    await new Promise(r => setTimeout(r, 300));
+    check(!app.log.some(e => e.method === 'notifications/picprep/roots'), 'an error reply: the app is told nothing', app.log.map(e => e.method));
+    await b.close();
+    await app.stop();
+  }
 }
 
 main().catch(e => { bad('crashed: ' + (e && e.stack || e)); }).finally(() => {

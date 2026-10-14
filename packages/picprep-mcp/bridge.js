@@ -9,7 +9,12 @@
 // a new release of this package.
 //
 // stdout carries protocol messages ONLY - anything else written there breaks the client - so every
-// note goes to stderr. Node standard library only, on purpose: `npx -y picprep-mcp` must just work.
+// note goes to stderr.
+//
+// One piece of protocol plumbing, not a tool: a client that declares the `roots` capability is asked
+// (roots/list, over stdio, which the app's plain HTTP replies cannot do) for the folders it works in, and
+// the answer is handed to the app as a notification (notifications/picprep/roots) on the same session.
+// The reply is consumed here, never forwarded; a client that does not answer in 5 s is left alone. Node standard library only, on purpose: `npx -y picprep-mcp` must just work.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -26,6 +31,7 @@ const LEGACY_APP = 'photoprep';   // the older name
 const MAC_BUNDLE_ID = 'com.picprep.app';
 const START_WAIT_MS = 30000;
 const DEFAULT_PROTOCOL = '2025-06-18';
+const ROOTS_WAIT_MS = 5000;
 
 class BridgeError extends Error {}
 
@@ -240,10 +246,15 @@ function run({ input = process.stdin, output = process.stdout, log = m => proces
   let fromCache = null;       // the cached catalogue this session was answered from, until the app runs
   let opening = null;         // the client's initialize while it is being answered: later messages wait for it
   let internal = 0;
+  let clientRoots = false;    // the client declared the roots capability
+  let rootsList = null;       // the roots the client last reported: [{uri, name?}]
+  let rootsSent = null;       // which session and roots the app was last told, so it hears each once
+  const rootWaits = new Map();   // id of our roots/list request -> resolve, until the client answers
+  let askedRoots = 0;
   const pending = new Set();
   const ownId = () => 'picprep-mcp-' + (++internal);
 
-  function reset() { ready = null; conn = null; sessionId = null; }
+  function reset() { ready = null; conn = null; sessionId = null; rootsSent = null; }
 
   // POST one message to /mcp. Every JSON-RPC message in the answer goes to onMessage. Resolves with the
   // HTTP status, and the body when it held no JSON-RPC message (for the error).
@@ -288,6 +299,7 @@ function run({ input = process.stdin, output = process.stdout, log = m => proces
       // The bridge completes the handshake itself: the client's own notifications/initialized may
       // have gone by long before the app was started.
       await post({ jsonrpc: '2.0', method: 'notifications/initialized' }, unexpected);
+      await pushRoots();   // a new session (first start, or after the app restarted) hears the roots already known
       const cached = readJson(cacheFile()) || {};
       const accepted = new Set(cached.accepted || []);
       if (protocol === params.protocolVersion) accepted.add(protocol);
@@ -296,6 +308,33 @@ function run({ input = process.stdin, output = process.stdout, log = m => proces
     })();
     ready.catch(reset);
     return ready;
+  }
+
+  // Tell the app the client's roots, once per session and list. Never throws: a failure only means the app does not
+  // learn the folder.
+  async function pushRoots() {
+    if (!rootsList || !conn || !sessionId) return;
+    const key = sessionId + JSON.stringify(rootsList);
+    if (key === rootsSent) return;
+    rootsSent = key;
+    try { await post({ jsonrpc: '2.0', method: 'notifications/picprep/roots', params: { roots: rootsList } }, unexpected); }
+    catch (e) { rootsSent = null; log('could not tell PicPrep the client\'s folders: ' + e.message); }
+  }
+
+  // Ask the client for its roots and keep the answer. Waits on the client only here, in its own task: forwarded
+  // traffic never waits for it. If the app is not running (a session answered from the catalogue) nothing starts it;
+  // the roots go with the session when it opens.
+  async function askRoots() {
+    const id = 'pp-roots-' + (++askedRoots);
+    const reply = new Promise(resolve => {
+      const t = setTimeout(() => { rootWaits.delete(id); resolve(null); }, ROOTS_WAIT_MS);
+      rootWaits.set(id, m => { clearTimeout(t); rootWaits.delete(id); resolve(m); });
+    });
+    write({ jsonrpc: '2.0', id, method: 'roots/list' });
+    const m = await reply;
+    if (!m || m.error || !m.result || !Array.isArray(m.result.roots)) return;
+    rootsList = m.result.roots.filter(r => r && typeof r.uri === 'string').map(r => typeof r.name === 'string' ? { uri: r.uri, name: r.name } : { uri: r.uri });
+    if (ready) { try { await ready; } catch (_) { return; } await pushRoots(); }
   }
 
   const unexpected = m => log('PicPrep sent an unexpected message: ' + clip(JSON.stringify(m)));
@@ -351,6 +390,8 @@ function run({ input = process.stdin, output = process.stdout, log = m => proces
 
   async function initialize(msg) {
     clientInit = msg.params || null;
+    clientRoots = !!(clientInit && clientInit.capabilities && clientInit.capabilities.roots);
+    rootsList = null;
     reset();
     const cache = !(await running()) && readCache();
     if (cache) {
@@ -366,7 +407,9 @@ function run({ input = process.stdin, output = process.stdout, log = m => proces
 
   async function route(msg) {
     const isRequest = msg.id !== undefined && msg.id !== null && typeof msg.method === 'string';
-    if (msg.method === 'notifications/initialized') return;   // the bridge sends the app its own (see live)
+    if (msg.method === 'notifications/initialized') { if (clientRoots) askRoots().catch(e => log('roots/list failed: ' + e.message)); return; }   // the bridge sends the app its own (see live)
+    // The bridge asks for the roots itself, so this goes no further (the app has nothing to do with it over plain HTTP).
+    if (msg.method === 'notifications/roots/list_changed') { if (clientRoots) askRoots().catch(e => log('roots/list failed: ' + e.message)); return; }
     if (fromCache && !ready) {
       if (msg.method === 'tools/list' && !(msg.params && msg.params.cursor)) return write({ jsonrpc: '2.0', id: msg.id, result: { tools: fromCache.tools } });
       if (msg.method === 'ping') return write({ jsonrpc: '2.0', id: msg.id, result: {} });
@@ -391,6 +434,8 @@ function run({ input = process.stdin, output = process.stdout, log = m => proces
       let msg;
       try { msg = JSON.parse(line); } catch (_) { return write({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'parse error: not JSON: ' + clip(line) } }); }
       if (!msg || typeof msg !== 'object' || Array.isArray(msg)) return write({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'invalid request: one JSON-RPC message per line, not ' + clip(line) } });
+      // The client's answer to our own roots/list: ours alone, not the app's.
+      if (typeof msg.method !== 'string' && typeof msg.id === 'string' && msg.id.startsWith('pp-roots-')) return rootWaits.has(msg.id) ? rootWaits.get(msg.id)(msg) : undefined;   // a late one is dropped too
       // Messages are handled concurrently: one call waiting on the person must not hold up the rest.
       const p = handle(msg).catch(e => answerError(msg, e));
       pending.add(p);
