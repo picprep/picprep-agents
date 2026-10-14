@@ -41,9 +41,26 @@ check(read('CLAUDE.md') === '@AGENTS.md\n', 'CLAUDE.md is exactly @AGENTS.md');
 check(read('GEMINI.md') === '@AGENTS.md\n', 'GEMINI.md is exactly @AGENTS.md');
 for (const f of ['.cursorrules', '.windsurfrules', '.clinerules', '.rules', 'AGENT.md', '.github/copilot-instructions.md']) check(!fs.existsSync(path.join(tpl, f)), 'no ' + f + ' at the template root');
 
+const STAGE = ['select', 'sort', 'compose', 'watermark', 'export'].map(n => 'picprep-' + n);
 for (const dir of ['.agents/skills', '.claude/skills']) {
-  check(same(fs.readdirSync(path.join(tpl, dir)).sort(), [...SKILLS].sort()), dir + ' holds the five skills', fs.readdirSync(path.join(tpl, dir)));
+  check(same(fs.readdirSync(path.join(tpl, dir)).sort(), [...SKILLS, ...STAGE].sort()), dir + ' holds the five assistant skills and the five stage skills', fs.readdirSync(path.join(tpl, dir)));
+  for (const s of STAGE) {
+    const differ = diffTree(path.join(root, 'skills', s), path.join(tpl, dir, s));
+    check(!differ.length, dir + '/' + s + ' matches skills/' + s + (differ.length ? ' (run: node scripts/sync-template-skills.mjs)' : ''), differ);
+  }
 }
+function files(d, base = d) { return fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? files(path.join(d, e.name), base) : [path.relative(base, path.join(d, e.name))]).sort(); }
+function diffTree(a, b) {
+  if (!fs.existsSync(b)) return ['missing ' + b];
+  const fa = files(a), fb = files(b), out = [];
+  for (const f of new Set([...fa, ...fb])) {
+    if (!fa.includes(f) || !fb.includes(f)) out.push(f);
+    else if (!fs.readFileSync(path.join(a, f)).equals(fs.readFileSync(path.join(b, f)))) out.push(f);
+  }
+  return out;
+}
+check(read('AGENTS.md').includes('If the contents of these files are not already in your context, read them now, and again whenever they are gone.'), 'AGENTS.md reads the memory once, only if not already in context');
+check(!fs.existsSync(path.join(tpl, '.claude/settings.json')), 'no .claude/settings.json (a hook that does nothing)');
 function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
 for (const s of SKILLS) {
   const a = read('.agents/skills/' + s + '/SKILL.md'), b = read('.claude/skills/' + s + '/SKILL.md');
@@ -54,7 +71,7 @@ for (const s of SKILLS) {
   check(m && !a.includes('\r') && fields.name === s && fields.description && fields.description.length > 40, s + ' has valid front matter (name, one-line description)', fields);
 }
 
-for (const f of ['.claude/settings.json', '.codex/hooks.json']) {
+for (const f of ['.codex/hooks.json']) {
   try {
     const h = JSON.parse(read(f)).hooks.SessionStart;
     check(h.length === 1 && h[0].matcher === 'startup|compact' && h[0].hooks[0].type === 'command', f + ' has a SessionStart hook for startup and compact', h);
@@ -62,12 +79,10 @@ for (const f of ['.claude/settings.json', '.codex/hooks.json']) {
 }
 
 // Codex does not expand @imports, so its hook prints exactly the always-loaded files; Claude Code loads them
-// through CLAUDE.md, so its hook prints nothing (a second copy would be read twice).
+// through CLAUDE.md, so it has no hook (a second copy would be read twice).
 try {
   const cmd = JSON.parse(read('.codex/hooks.json')).hooks.SessionStart[0].hooks[0].command;
   check(cmd === 'cat ' + ALWAYS.join(' '), '.codex/hooks.json prints exactly the four always-loaded files', cmd);
-  const cl = JSON.parse(read('.claude/settings.json')).hooks.SessionStart[0].hooks[0].command;
-  check(cl === 'true', '.claude/settings.json hook prints nothing (Claude Code imports the files itself)', cl);
 } catch (e) { bad('hook commands: ' + e.message); }
 
 // Everything under template/ is walked by the private-names check (it reads every file in the repo).

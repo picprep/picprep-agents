@@ -56,6 +56,6 @@ If `CHANGES.md` has a line you have not mentioned, say it once, in a sentence, w
 @memory/how-you-work.md
 @memory/recent.md
 
-Read these files at the start of every session, and again whenever their contents are no longer in your context.
+If the contents of these files are not already in your context, read them now, and again whenever they are gone.
 
 Read when needed: memory/captions.md, memory/references.md, memory/archive.md and memory/sources/.
