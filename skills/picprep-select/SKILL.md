@@ -17,11 +17,11 @@ diff is the point: it tells you where your taste was wrong, so the next proposal
 > drag, judging wants a grid and a yes/no reflex, and mixing them makes both worse. Ordering is
 > `picprep-sort`.
 
-A person new to PicPrep may be taking the built-in tour (Help > Show the tour) on a project named "Sample shoot".
-Leave it alone: its photos are public-domain samples and the tour is theirs to walk, not something to propose
-changes to. The tour has them keep, maybe and cut a few photos and write a comment themselves, the window is
+A person new to PicPrep may be taking the built-in guide (Help > Getting started) on a project named "Sample shoot".
+Leave it alone: its photos are public-domain samples and the guide is theirs to walk, not something to propose
+changes to. The guide has them pick, arrange, shape, mark and export a sample post themselves, the window is
 locked to each step while it runs (it will not follow you to another tab or project), and "Sample shoot" is
-deleted when the tour ends, so nothing in it is worth reading or building on.
+deleted with everything it exported when the guide ends, so nothing in it is worth reading or building on.
 
 ## Look at every frame before you propose anything
 
