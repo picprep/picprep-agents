@@ -1,6 +1,6 @@
 {
   "name": "picprep-agents",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "PicPrep for assistants: the picprep-mcp connector, the skills, and the plugins and settings for each agent harness.",
   "license": "MIT",

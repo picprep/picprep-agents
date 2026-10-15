@@ -1,6 +1,6 @@
 {
   "name": "picprep-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "mcpName": "io.github.picprep/picprep-mcp",
   "description": "Connect any MCP assistant (Claude Code, Codex, Cursor, Antigravity, Devin CLI, OpenCode and others) to the PicPrep desktop app on your computer.",
   "keywords": [
