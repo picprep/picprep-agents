@@ -291,3 +291,23 @@ every mark there in Post A (did in PicPrep, 2026-10-15)" written at Post B, Post
 do not hold it. Conclusion: template wording alone makes it look back about one run in five; the model repeats the sequence
 it used for the first post. Needs the signal where it cannot skip it (the new project's own `view`/`open_project` reply,
 e.g. a line "Post A: you placed marks, they moved them since" across projects).
+
+### Hand-edits now come with the project (2026-10-15, Claude Code only, Sonnet)
+
+Change. The app (`picprep` src/mcp.js) puts `theyChanged` in the reply of `open_project` and of `view {what:"project"}`: up to
+5 plain lines `{project, post, what, slides}` for what the person changed by hand after the assistant's applied changes on
+other posts updated in the last 14 days (e.g. "moved the marks you placed to top left"); absent when there is none; the
+assistant's own later change is not listed. Template: AGENTS.md "Every request starts here" and picprep-learn read
+`theyChanged`; the watermark skill's first step now reads it; the heading "First session" is now "Before you know them";
+the word onboarding is out of the lines the assistant reads aloud.
+
+| run | result | cost |
+|---|---|---|
+| repeat-correction #1 | 5 of 5 checks; Post D top left; memory line with source and date | $1.04 |
+| repeat-correction #2 | 5 of 5 checks; Post B already top left ("I saw you moved the marks in Post A") | $0.89 |
+| compaction #1 | 5 of 5 checks (export location taken out after compaction too) | $1.65 |
+
+repeat-correction passes 2 of 2 (was 0 to 1 of 2 with wording alone): the signal in the reply of the call the model always
+makes works where a skill step it could skip did not. Compaction did not regress. Still open: run #2 said "First session, so
+onboarding applies" and "It stands unless you reject it" once more, so the do-not-say wording still does not hold it
+(the first phrase may come from the skill name picprep-onboard). Total $3.58.

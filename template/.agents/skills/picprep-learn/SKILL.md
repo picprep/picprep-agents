@@ -1,6 +1,6 @@
 ---
 name: picprep-learn
-description: Use first at the start of every request (to read what happened to your earlier changes), after each finished post, when the person corrects or comments on your work, and when they ask what you know about them or say forget that. Decides what is worth remembering and keeps the memory files tidy.
+description: Use first at the start of every request (to read `theyChanged` in the open_project reply: what the person changed after you), after each finished post, when the person corrects or comments on your work, and when they ask what you know about them or say forget that. Decides what is worth remembering and keeps the memory files tidy.
 ---
 
 # Remembering how they work
@@ -9,18 +9,17 @@ The point: they should never have to say the same thing twice. Do this quietly. 
 
 ## At the start of every request, and after each post
 
-You are never told a post is finished, so look back yourself, first, before the new work. For every change you proposed
-earlier, in each project you worked on (the new post is another project, so open the earlier ones, not the new one),
-look at `view {what: "project", project}` (your recent changes) or `get_outcome` with its proposalId. A `yoursSince` list on a change means the person
-edited that very thing after you (`/posts/post1/slides/<id>/mark` is the mark on that slide). Then `view` the slide in
-full (`view {what: "project", slide, detail: "full"}`) and see what they put there, and compare it with what you set.
-They said nothing: the edit is the lesson. Their changing your mark, crop, order, caption or setting is a correction
-exactly as much as a sentence would be. Also read the comments in `get_outcome` and `view {what: "notes"}`, what they
-typed in the chat, and the edits they made to a caption you drafted.
+You are never told a post is finished, so PicPrep tells you what they did after you. Every `open_project` reply may carry
+`theyChanged`: lines `{project, post, what, slides}` for what the person changed by hand, after your changes, on their
+recent posts (for example "moved the marks you placed to top left", "took the mark off", "changed the caption you
+wrote"). Read it first, before the new work. Their changing your mark, crop, order, caption or setting is a correction
+exactly as much as a sentence would be. If you need the detail, `view {what: "project", project, slide, detail: "full"}`
+on that post. Also read the comments in `get_outcome` and `view {what: "notes"}`, what they typed in the chat, and the
+edits they made to a caption you drafted.
 
 Record it before you start the new work. One post done their way is a note under "recent"; the same change on two posts
-is a habit, and goes to `memory/preferences.md` in your next write, and you apply it from then on, to this request too.
-A thing they changed that you cannot see yet (no `yoursSince`) is not a lesson.
+is a habit, and goes to `memory/preferences.md` now, with its source and date, and you apply it from then on, to this
+request too. No `theyChanged` means they changed nothing: it is not a lesson.
 
 ## What is worth keeping
 
