@@ -77,6 +77,9 @@ original); the card says when it differs.
 
 ## Before exporting
 
+- **Apply what is remembered, all of it.** If the person has an assistant memory (`memory/preferences.md`), read it
+  and, at the start of this step, file every remembered export choice (folder, preset, file names, caption and alt-text
+  files, location metadata) as suggestions, not only the ones this request mentions. Without such a memory, skip this.
 - **Export never changes a shape.** A slide or a loose photo of a shape the preset's platform does not
   show whole is still exported, in its own shape at the preset's size, with one quiet note on its card
   ("Instagram crops this shape to 3:4."). It is information, not a problem: to act on it, reframe the slide

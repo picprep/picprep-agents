@@ -21,7 +21,7 @@ const WHEN_NEEDED = ['captions', 'references', 'archive'].map(n => 'memory/' + n
 const SKILLS = ['onboard', 'learn', 'caption', 'feed', 'deliver'].map(n => 'picprep-' + n);
 
 for (const f of [...ALWAYS, ...WHEN_NEEDED, 'memory/sources/.gitkeep', 'CHANGES.md', 'VERSION']) check(fs.existsSync(path.join(tpl, f)), f + ' exists');
-check(read('VERSION') === '1\n', 'VERSION is 1');
+check(read('VERSION') === '2\n', 'VERSION is 2');
 for (const f of [...ALWAYS, ...WHEN_NEEDED]) check(/^<!--[^]*?-->/.test(read(f)), f + ' starts with a comment saying what goes in it');
 
 const imports = read('AGENTS.md').split('\n').filter(l => /^@\S+$/.test(l)).map(l => l.slice(1));
@@ -42,8 +42,11 @@ check(read('GEMINI.md') === '@AGENTS.md\n', 'GEMINI.md is exactly @AGENTS.md');
 for (const f of ['.cursorrules', '.windsurfrules', '.clinerules', '.rules', 'AGENT.md', '.github/copilot-instructions.md']) check(!fs.existsSync(path.join(tpl, f)), 'no ' + f + ' at the template root');
 
 const STAGE = ['select', 'sort', 'compose', 'watermark', 'export'].map(n => 'picprep-' + n);
-for (const dir of ['.agents/skills', '.claude/skills']) {
-  check(same(fs.readdirSync(path.join(tpl, dir)).sort(), [...SKILLS, ...STAGE].sort()), dir + ' holds the five assistant skills and the five stage skills', fs.readdirSync(path.join(tpl, dir)));
+// Each skill is shipped once, in .agents/skills; PicPrep links .claude/skills to it when it makes an assistant.
+check(!fs.existsSync(path.join(tpl, '.claude/skills')), 'no .claude/skills in the template (PicPrep links it to .agents/skills)');
+{
+  const dir = '.agents/skills';
+  check(same(fs.readdirSync(path.join(tpl, dir)).sort(), [...SKILLS, ...STAGE].sort()), dir + ' holds the five assistant skills and the five stage skills, each once', fs.readdirSync(path.join(tpl, dir)));
   for (const s of STAGE) {
     const differ = diffTree(path.join(root, 'skills', s), path.join(tpl, dir, s));
     check(!differ.length, dir + '/' + s + ' matches skills/' + s + (differ.length ? ' (run: node scripts/sync-template-skills.mjs)' : ''), differ);
@@ -63,8 +66,7 @@ check(read('AGENTS.md').includes('If the contents of these files are not already
 check(!fs.existsSync(path.join(tpl, '.claude/settings.json')), 'no .claude/settings.json (a hook that does nothing)');
 function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
 for (const s of SKILLS) {
-  const a = read('.agents/skills/' + s + '/SKILL.md'), b = read('.claude/skills/' + s + '/SKILL.md');
-  check(a === b, s + ' is identical in both skill folders');
+  const a = read('.agents/skills/' + s + '/SKILL.md');
   const m = /^---\n([\s\S]*?)\n---\n/.exec(a);
   const fields = {};
   if (m) for (const line of m[1].split('\n')) { const kv = /^([a-z]+):\s*(.*)$/.exec(line); if (kv) fields[kv[1]] = kv[2]; }

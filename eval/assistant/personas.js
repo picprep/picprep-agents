@@ -40,6 +40,7 @@ function readProject(home, id) {
     slides: slides.length, marked: marks.filter(m => m.length).length,
     corners: marks.flat().reduce((o, c) => Object.assign(o, { [c]: (o[c] || 0) + 1 }), {}),
     allBr: marks.some(m => m.length) && marks.flat().every(c => c === 'br'),
+    allTl: marks.some(m => m.length) && marks.flat().every(c => c === 'tl'),
     // The caption is the last one filed (a newer one replaces the older).
     caption: cap.length ? cap[cap.length - 1] : (typeof exp.caption === 'string' && exp.caption ? exp.caption : null),
     metadata: meta.length ? meta[meta.length - 1] : null,
@@ -94,32 +95,39 @@ const personas = {
   'repeat-correction': {
     covers: 'SC-003 (a correction made twice is remembered the third time) and the onboarding limit',
     seed() { /* a new assistant, nothing known */ },
+    // The person wants the mark top left, a corner the template does not choose. After each post is marked they move the
+    // mark there by hand in PicPrep, saying nothing about it, and ask for the next post. Returns a string, or
+    // { mark: { post, corner }, say } when the person first moves a mark (the runner does it through the app).
     next(snaps, said) {
       const n = said.length, last = snaps[snaps.length - 1];
-      const br = name => !!(last && last.projects[name] && last.projects[name].allBr);
+      const get = L => (last && last.projects['Post ' + L]) || null;
       const asked = L => said.some(s => s.includes('Post ' + L));
       if (n === 0) return 'hi! let\'s get to know each other. I\'ve got a few photos from a trip, they\'re in the project called Post A. can you put my watermark on them?';
-      if (n === 1) return 'I post travel and nature photos on instagram, in english. mostly I want help with the watermark and the captions. ' + (br('Post A') ? 'go on with Post A' : 'and could you move the mark to the bottom right? it covers the sky down there on the left. go on with Post A');
-      if (!asked('B')) return ASK_MARK('B');
-      const fix = 'bottom right again please, same as before';
-      if (!asked('C')) return br('Post B') || said[said.length - 1] === fix ? ASK_MARK('C') : fix;
-      if (!asked('D')) return br('Post C') || said[said.length - 1] === fix ? 'and now Post D, mark it too' : fix;
-      return null;
+      if (n === 1) return 'I post travel and nature photos on instagram, in english. mostly I want help with the watermark and the captions. go on with Post A';
+      const order = ['A', 'B', 'C', 'D'], cur = order.filter(asked).pop(), p = get(cur);
+      if (!p || !p.marked) return said.filter(s => s === 'go on with Post ' + cur).length < 1 ? 'go on with Post ' + cur : null;
+      const nextL = order[order.indexOf(cur) + 1];
+      if (!nextL) return null;
+      const ask = nextL === 'D' ? 'and now Post D, mark it too' : ASK_MARK(nextL);
+      return p.allTl ? ask : { mark: { post: 'Post ' + cur, corner: 'tl' }, say: ask };
     },
     score(snaps, run) {
-      const last = snaps[snaps.length - 1], mem = last.memory;
+      const last = snaps[snaps.length - 1];
       const firstWith = name => { for (const s of snaps) if (s.projects[name] && s.projects[name].marked) return s.projects[name]; return null; };
+      const snapAt = name => snaps.find(s => s.projects[name] && s.projects[name].marked) || last;
       const out = [];
       const C = firstWith('Post C'), D = firstWith('Post D');
-      // C and D are asked for in a turn that says nothing about where the mark goes; the turn before B's correction (if any) is separate.
-      out.push({ what: 'third post marked bottom right without being told', ok: C ? C.allBr : false, why: C ? 'Post C corners ' + JSON.stringify(C.corners) : 'Post C was never marked' });
-      out.push({ what: 'fourth post marked bottom right without being told', ok: D ? D.allBr : false, why: D ? 'Post D corners ' + JSON.stringify(D.corners) : 'Post D was never marked' });
-      const prefLine = Object.entries(mem).filter(([f]) => /^(preferences|how-you-work)\.md$/.test(f)).flatMap(([f, t]) => t.split('\n').filter(l => /bottom[\s-]*right|lower[\s-]*right|\bbr\b/i.test(l)).map(l => f + ': ' + l.trim()));
-      out.push({ what: 'memory holds the mark corner, with its source and a date', ok: prefLine.some(l => /20\d\d|\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(l)), why: prefLine.join(' | ').slice(0, 300) || 'no line about the corner in preferences.md or how-you-work.md' });
-      const aboutNow = body(mem['about.md']);
+      const prefLine = mem => Object.entries(mem).filter(([f]) => /^(preferences|how-you-work)\.md$/.test(f)).flatMap(([f, t]) => t.split('\n').filter(l => /top[\s-]*left|upper[\s-]*left|\btl\b/i.test(l)).map(l => f + ': ' + l.trim()));
+      const byThree = prefLine(snapAt('Post C').memory), atEnd = prefLine(last.memory);
+      const dated = ls => ls.some(l => /20\d\d|\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(l));
+      out.push({ what: 'by the third post, memory holds the mark corner (top left), with its source and a date', ok: dated(byThree), why: byThree.join(' | ').slice(0, 300) || 'no line about top left in preferences.md or how-you-work.md when Post C was marked' });
+      out.push({ what: 'fourth post proposed top left without being told', ok: D ? D.allTl : false, why: D ? 'Post D corners ' + JSON.stringify(D.corners) : 'Post D was never marked' });
+      out.push({ what: 'memory at the end holds top left, with source and date', ok: dated(atEnd), why: atEnd.join(' | ').slice(0, 300) || 'none' });
+      const aboutNow = body(last.memory['about.md']);
       out.push({ what: 'about.md written by the end (onboarding)', ok: aboutNow.length > 20, why: aboutNow.slice(0, 200).replace(/\n/g, ' / ') || 'empty' });
       out.push({ what: 'at most 3 questions before the first change', ok: run.questionsBeforeWork <= 3, why: run.questionsBeforeWork + ' question marks in what it said before its first propose' });
-      out.push({ what: 'info: marks right on first try (A, B, C, D)', ok: null, why: ['Post A', 'Post B', 'Post C', 'Post D'].map(n => { const f = firstWith(n); return n.slice(-1) + ':' + (f ? (f.allBr ? 'br' : JSON.stringify(f.corners)) : 'none'); }).join(' ') });
+      out.push({ what: 'info: marks proposed (A, B, C, D)', ok: null, why: ['Post A', 'Post B', 'Post C', 'Post D'].map(n => { const f = firstWith(n); return n.slice(-1) + ':' + (f ? JSON.stringify(f.corners) : 'none'); }).join(' ') });
+      out.push({ what: 'info: third post (C) proposed top left', ok: null, why: C ? JSON.stringify(C.corners) : 'never marked' });
       return out;
     },
   },
@@ -181,6 +189,7 @@ const personas = {
         '## Export', '- Take the GPS location out of exported files. (their words, Oct 2026)']);
     },
     compactAt: 2,   // the third message is /compact
+    runs: 3,        // one run in two is too few to tell 100% from 50% (EVAL.md)
     next(snaps) {
       const n = snaps.length;
       if (n === 0) return 'hi! can you put my watermark on the photos in Post A?';

@@ -7,6 +7,8 @@
 //
 //   node eval/assistant/eval.js --dry                         everything but claude: fixtures, assistant creation, scoring
 //   node eval/assistant/eval.js [--runs 2] [--personas a,b]   the real run (starts Claude Code sessions: costs; ask first)
+//     --runs N sets every persona's runs; --runs 2,compaction=3 sets a default and some personas'; without --runs each
+//     persona runs its own number (personas.js `runs`, compaction 3) or 2.
 //
 // Everything it makes lives in one temporary folder and the sessions' files under ~/.claude/projects; both are removed
 // when it ends, however it ends. Results go to stdout.
@@ -15,7 +17,7 @@ const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
 const R = require('../lib/run');
-const { build } = require('./setup');
+const { build, handMark } = require('./setup');
 const { personas, readProject, readMemory, captionTells, median, CAPTIONS, body } = require('./personas');
 
 const REPO = path.join(__dirname, '..', '..');
@@ -78,8 +80,16 @@ async function runOne(name, n) {
   try {
     app = await R.startApp(SRC, fx.home, ['compose', fx.projects['Post A'].folder], true);
     for (let guard = 0; guard < 9; guard++) {
-      const prompt = persona.next(snaps, said);
+      let prompt = persona.next(snaps, said);
       if (prompt == null) break;
+      if (typeof prompt === 'object') {
+        // The person acts in PicPrep before they write: the app is stopped, a window-side server on the same folder moves
+        // the mark, and the app is started again, so the change is the person's own edit, not the assistant's.
+        await R.stopApp(app); app = null;
+        await handMark(SRC, fx, prompt.mark.post, prompt.mark.corner);
+        app = await R.startApp(SRC, fx.home, ['compose', fx.projects['Post A'].folder], true);
+        prompt = prompt.say;
+      }
       said.push(prompt);
       const left = RUN_MS - (Date.now() - started);
       if (left < 20000) { run.timeout = true; break; }
@@ -129,7 +139,7 @@ async function dry() {
     const fx = fxs[name] = await build(SRC, dir);
     personas[name].seed(fx.assistant);
     const has = f => fs.existsSync(path.join(fx.assistant, f));
-    check(name + ': assistant folder made by the app with its skills and CLAUDE.md', has('CLAUDE.md') && has('AGENTS.md') && has('.claude/skills/picprep-onboard/SKILL.md') && has('.claude/skills/picprep-caption/SKILL.md') && has('.picprep/template.json'), fx.assistant);
+    check(name + ': assistant folder made by the app with its skills and CLAUDE.md', has('CLAUDE.md') && has('AGENTS.md') && has('.agents/skills/picprep-onboard/SKILL.md') && has('.agents/skills/picprep-caption/SKILL.md') && has('.claude/skills/picprep-onboard/SKILL.md') && has('.picprep/template.json'), fx.assistant);
     check(name + ': five projects, three photos each, no change of the assistant on file', Object.values(fx.projects).length === 5 && Object.keys(fx.projects).every(k => { const p = readProject(fx.home, fx.projects[k].id); return p.slides === 3; }), JSON.stringify(Object.keys(fx.projects)));
     const mem = readMemory(fx.assistant);
     const seeded = { 'repeat-correction': 0, 'one-off': 0, 'caption-voice': 12, compaction: 3 }[name];
@@ -165,23 +175,34 @@ async function dry() {
   } finally { await R.stopApp(app); R.unlock(); }
   // Scorers on canned files, no app.
   const memOf = o => Object.fromEntries(Object.entries(o).map(([f, t]) => [f, '<!-- c -->\n' + t]));
-  const proj = (o = {}) => Object.assign({ slides: 3, marked: 3, corners: { br: 3 }, allBr: true, caption: null, metadata: null }, o);
+  const proj = (o = {}) => Object.assign({ slides: 3, marked: 3, corners: { br: 3 }, allBr: true, allTl: false, caption: null, metadata: null }, o);
   const snapOf = (projects, memory) => ({ projects, memory: memOf(memory) });
   {
-    const good = snapOf({ 'Post A': proj({ allBr: false, corners: { bl: 3 } }), 'Post B': proj(), 'Post C': proj(), 'Post D': proj() }, { 'about.md': 'Travel photos on Instagram, English, wants marks and captions help (their words, Oct 2026)', 'preferences.md': '- Mark: bottom right on every slide (they corrected it on two posts, Oct 2026)' });
+    const TL = { allBr: false, allTl: true, corners: { tl: 3 } }, BR = { allBr: true, allTl: false, corners: { br: 3 } };
+    const mem = { 'about.md': 'Travel photos on Instagram, English, wants marks and captions help (their words, Oct 2026)', 'preferences.md': '- Mark: top left on every slide (they moved it by hand on two posts, Oct 2026)' };
+    const good = snapOf({ 'Post A': proj(BR), 'Post B': proj(BR), 'Post C': proj(TL), 'Post D': proj(TL) }, mem);
     const r = personas['repeat-correction'].score([good], { questionsBeforeWork: 2 });
     check('repeat-correction scorer: passes a remembered run', r.filter(c => c.ok !== null).every(c => c.ok), JSON.stringify(r.filter(c => c.ok === false)));
-    const forgot = snapOf({ 'Post C': proj({ allBr: false, corners: { bl: 3 } }), 'Post D': proj({ allBr: false, corners: { bl: 3 } }) }, { 'about.md': '' });
+    const forgot = snapOf({ 'Post C': proj(BR), 'Post D': proj(BR) }, { 'about.md': '' });
     const r2 = personas['repeat-correction'].score([forgot], { questionsBeforeWork: 5 });
     check('repeat-correction scorer: fails a forgetful run on every count', r2.filter(c => c.ok !== null).every(c => !c.ok), JSON.stringify(r2));
+    const late = [snapOf({ 'Post C': proj(BR) }, { 'about.md': mem['about.md'] }), good];
+    check('repeat-correction scorer: memory written only after Post C does not count as "by the third post"', personas['repeat-correction'].score(late, { questionsBeforeWork: 1 })[0].ok === false, '');
     const said = [], snaps = [];
-    const say1 = () => { const t = personas['repeat-correction'].next(snaps, said); if (t) said.push(t); return t; };
+    const say1 = () => { const t = personas['repeat-correction'].next(snaps, said); if (t) said.push(typeof t === 'string' ? t : t.say); return t; };
     say1(); snaps.push(snapOf({}, {})); say1();
-    snaps.push(snapOf({ 'Post A': proj({ allBr: false }) }, {})); const b = say1();
-    check('repeat-correction script: asks for Post B after answering', /Post B/.test(b), b);
-    snaps.push(snapOf({ 'Post B': proj({ allBr: false }) }, {}));
-    const fix = say1();
-    check('repeat-correction script: corrects only when the mark is wrong', /bottom right again/.test(fix), fix);
+    snaps.push(snapOf({ 'Post A': proj(BR) }, {}));
+    const b = say1();
+    check('repeat-correction script: after Post A is marked elsewhere than top left, the person moves it by hand, then asks for Post B', b && b.mark && b.mark.post === 'Post A' && b.mark.corner === 'tl' && /Post B/.test(b.say) && !/remember|top left|always/i.test(b.say), JSON.stringify(b));
+    snaps.push(snapOf({ 'Post A': proj(BR), 'Post B': proj(TL) }, {}));
+    const c = say1();
+    check('repeat-correction script: moves nothing when the mark is already top left', typeof c === 'string' && /Post C/.test(c), JSON.stringify(c));
+    snaps.push(snapOf({ 'Post C': proj(TL) }, {}));
+    const d = say1();
+    check('repeat-correction script: asks for Post D, then ends', typeof d === 'string' && /Post D/.test(d), JSON.stringify(d));
+    snaps.push(snapOf({ 'Post D': proj(TL) }, {}));
+    check('repeat-correction script: ends after Post D', say1() === null, '');
+    check('compaction runs 3 times by default', personas.compaction.runs === 3, String(personas.compaction.runs));
   }
   {
     const habit = snapOf({ 'Post A': proj({ marked: 0 }), 'Post B': proj() }, { 'preferences.md': '- No watermark on trips (they said leave it off, Oct 2026)' });
@@ -207,11 +228,16 @@ async function dry() {
 // ---------- the real run ----------
 async function real() {
   const names = (opt('personas', Object.keys(personas).join(','))).split(',');
-  const runs = Number(opt('runs', 2));
+  const spec = String(opt('runs', '')).split(',').filter(Boolean);
+  const dflt = spec.find(x => !x.includes('=')), per = Object.fromEntries(spec.filter(x => x.includes('=')).map(x => x.split('=')));
+  for (const k of Object.keys(per)) if (!personas[k] || !(Number(per[k]) >= 1)) throw new Error('--runs: "' + k + '=' + per[k] + '" must name a persona (' + Object.keys(personas).join(', ') + ') and a number');
+  if (dflt !== undefined && !(Number(dflt) >= 1)) throw new Error('--runs: "' + dflt + '" is not a number');
+  const runsOf = name => per[name] ? Number(per[name]) : dflt !== undefined ? Number(dflt) : personas[name].runs || 2;
+  const runs = Math.max(...names.map(runsOf));
   for (const n of names) if (!personas[n]) throw new Error('no persona ' + n + '; they are ' + Object.keys(personas).join(', '));
-  console.log('planned: ' + names.length + ' personas x ' + runs + ' runs = ' + names.length * runs + ' conversations, Claude Code, model sonnet, one session each continued with --resume, at most ' + RUN_MS / 60000 + ' minutes each');
+  console.log('planned: ' + names.length + ' personas, ' + names.map(x => x + ' x' + runsOf(x)).join(', ') + ' = ' + names.reduce((a, x) => a + runsOf(x), 0) + ' conversations, Claude Code, model sonnet, one session each continued with --resume, at most ' + RUN_MS / 60000 + ' minutes each');
   const results = [], t0 = Date.now();
-  for (let n = 1; n <= runs; n++) for (const name of names) {
+  for (let n = 1; n <= runs; n++) for (const name of names.filter(x => n <= runsOf(x))) {
     process.stdout.write('run ' + name + ' #' + n + ' ... ');
     let run;
     try { run = await runOne(name, n); } catch (e) { run = { persona: name, n, error: String(e && e.message || e), checks: [] }; }

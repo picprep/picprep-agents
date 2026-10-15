@@ -6,12 +6,11 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STAGE = ['select', 'sort', 'compose', 'watermark', 'export'].map(n => 'picprep-' + n);
-for (const dir of ['.agents/skills', '.claude/skills']) {
-  for (const s of STAGE) {
-    const from = path.join(root, 'skills', s), to = path.join(root, 'template', dir, s);
-    if (!fs.existsSync(from)) throw new Error('missing stage skill ' + from);
-    fs.rmSync(to, { recursive: true, force: true });
-    fs.cpSync(from, to, { recursive: true });
-  }
+// Each skill is shipped once, in .agents/skills; PicPrep links .claude/skills to it when it makes an assistant.
+for (const s of STAGE) {
+  const from = path.join(root, 'skills', s), to = path.join(root, 'template', '.agents/skills', s);
+  if (!fs.existsSync(from)) throw new Error('missing stage skill ' + from);
+  fs.rmSync(to, { recursive: true, force: true });
+  fs.cpSync(from, to, { recursive: true });
 }
-console.log('stage skills copied into template/.agents/skills and template/.claude/skills');
+console.log('stage skills copied into template/.agents/skills');
