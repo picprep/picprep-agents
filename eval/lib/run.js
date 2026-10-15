@@ -215,4 +215,4 @@ async function runOne({ src, work, task, arm, n, iteration, model = 'sonnet', lo
   return runDir;
 }
 
-module.exports = { runOne, digest, short, calm, lock, unlock };
+module.exports = { runOne, digest, short, calm, lock, unlock, startApp, stopApp, agents, sleep, get };
