@@ -246,3 +246,24 @@ who wants the top left. "List of three" is not scored (it also appears in the pe
    enough. (That text is the app's tool instructions, so the change is in the app.)
 4. Next time: a persona who asks for a corner the template does not choose, so SC-003 is exercised, and 3 runs of
    compaction, since 1 of 2 is too few to tell 100% from 50%.
+
+### Re-run after template 2 (2026-10-15, Claude Code only)
+
+Same harness, Sonnet, same cut-offs (`--personas repeat-correction,compaction --runs 2,compaction=3`; `--dry` passed first,
+31 checks). Template 2 (assistants get `.claude/skills` as a link) loaded all skills in every run. 5 runs, 16 minutes, $6.76;
+none cut off, no harness fault, no run repeated. Everything it made was deleted.
+
+- repeat-correction #1: fail, 2 of 5 (148 s, $1.29). The person's hand-moves to top left were not noticed: Posts A to D all
+  marked bottom right, `preferences.md` held only the bottom-right choice, no top-left line.
+- repeat-correction #2: fail, 2 of 5 (158 s, $1.01). Same: A to D bottom right, nothing about top left in memory.
+  Onboarding passed in both (`about.md` written, 0 questions before the first change).
+- compaction #1: pass, 5 of 5 (217 s, $1.49).
+- compaction #2: 4 of 5 (225 s, $1.49). Mark and caption right after `/compact`; no export setting filed for the location,
+  the same miss as before.
+- compaction #3: pass, 5 of 5 (209 s, $1.48).
+
+Compaction is now 2 of 3 whole runs (earlier 1 of 2: 3 of 5 whole across both batches); the one miss is again the export
+location, and `preferences.md` held the line in all three, so it is applied, not remembered, that fails. SC-003's first half
+is now exercised (the corner is one the template does not choose) and fails 0 of 2: nothing the assistant reads showed it
+the person's own moves, or it did not act on them. Open: whether a hand-move is visible to it at all (History), then the
+skill wording.
