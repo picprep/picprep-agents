@@ -213,3 +213,36 @@ node eval/eval.js report --iteration 2 --previous 1
 The runner shares the machine: at most two apps at once, a batch only while the load is under 3, the window lock
 `/tmp/pp-flow.lock` held about five minutes at a time and then left for anyone waiting, and released (with every app
 and assistant stopped) on any exit.
+
+## Personal assistant (2026-10-15, Claude Code only)
+
+**What ran.** Spec 010 FR-110 / T037, on Claude Code only (no Codex, no Gemini: no subscription). Four scripted people,
+two runs each, 8 conversations (`node eval/assistant/eval.js --runs 2`; `--dry` checks everything without calling
+Claude). Each run: a throwaway user folder, five projects of three sample photos, an assistant folder made by the app's
+own route (`POST /api/assistants`) from the template, the app from source with its window unseen, and one Sonnet session
+per run continued with `--resume` (cwd = the assistant folder, the connector the only MCP server, the skills from the
+folder itself). Scored from the files and the app's projects, with regexes; no grader model. 8 runs, 22 minutes, $7.53 on
+the signed-in account; none was cut off (limit 8 minutes). Everything it made was deleted.
+
+| Persona | Result | Evidence |
+|---|---|---|
+| repeat-correction (SC-003) | not measured | Posts A to D were marked bottom right on the first try in both runs, so no correction was ever made. 1 of 2 runs wrote the corner to `preferences.md` with source and date anyway (the person had said it once); the other wrote nothing about it. |
+| onboarding (in the above) | pass 2 of 2 | 1 and 0 questions before the first change; `about.md` written both times. |
+| one-off (SC-003, second half) | pass 2 of 2 | "Not this time" took the marks off Post A; no line about it in memory; Post B marked as usual. |
+| caption-voice (SC-005, mechanical) | pass 2 of 2 | 5 of 5 captions filed in Export; no tells from the caption skill's list, no hashtags, all lowercase, 35 to 60 characters against a median of 32 in the seeded set (limit 64). |
+| compaction (SC-004) | 1 of 2 | `/compact` works as a turn of `claude -p --resume` and reported success. Run 1 applied all three seeded preferences after it. Run 2 applied the mark and the caption but filed no export setting for the location. Target is 100%. |
+
+**Could not be measured.** Other vendors (SC-006). SC-001 (a person's time). SC-005's blind judgement and invented facts
+(one caption named "quebec city" from a file name; whether that is a fact on the photo was not judged). SC-003's first half:
+the template's default corner is the one the persona asks for, so a repeated correction never happened; it needs a persona
+who wants the top left. "List of three" is not scored (it also appears in the person's own seed captions).
+
+**What the results suggest changing in the template (not done here).**
+1. `picprep-export` (and `AGENTS.md`): say that export choices in `memory/preferences.md` (location, preset, names) are
+   filed as suggestions at the start of the export step, like the mark and the caption; run 2 skipped the location one.
+2. `AGENTS.md` "How you talk": the first replies announce their reasoning ("First session, so onboarding applies",
+   "Empty memory, so..."). Say that the person is not told which skill or rule is being followed.
+3. The stage skills or app instructions make every reply end with "it stands unless you reject it"; once per session is
+   enough. (That text is the app's tool instructions, so the change is in the app.)
+4. Next time: a persona who asks for a corner the template does not choose, so SC-003 is exercised, and 3 runs of
+   compaction, since 1 of 2 is too few to tell 100% from 50%.
