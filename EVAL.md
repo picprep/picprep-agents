@@ -267,3 +267,27 @@ location, and `preferences.md` held the line in all three, so it is applied, not
 is now exercised (the corner is one the template does not choose) and fails 0 of 2: nothing the assistant reads showed it
 the person's own moves, or it did not act on them. Open: whether a hand-move is visible to it at all (History), then the
 skill wording.
+
+### Why the hand-moves were not noticed, and what was tried (2026-10-15, Claude Code only, repeat-correction x2 per batch, Sonnet)
+
+Diagnosis. The harness is right: the person's move reaches the project (3 of 3 marks changed, as an edit on top of the
+assistant's change). PicPrep also shows it: `get_outcome` on the earlier proposal returns `yoursSince` (the three mark
+paths), and `view` of that slide in full shows the new `anchor`/`fx`/`fy`. But `view what:"notes"` does not, and each post is
+its own project, so the `view` the assistant makes of the new post never lists the old post's changes. Nothing in the
+template made it look back: it follows the stage skills' open_project, view, propose, get_outcome sequence for the new post.
+Tool traces (new in eval.js output) showed no look at the earlier project in 5 of 6 batches.
+
+| batch | change | result |
+|---|---|---|
+| 1 | AGENTS.md "Every request starts here" (read outcomes of earlier changes), picprep-learn reworded, don't-examples | 0 of 2 |
+| 2 | same, also saying "get_outcome first, before open_project" | 0 of 2 (the batch before it, wording shorter: 1 of 2) |
+| 3 | app: `view` project lists `yoursSince` on recent changes (src/mcp.js, uncommitted); AGENTS.md tells it to view the earlier project | 0 of 2 |
+| 4 | picprep-watermark skill gains "First, look at where they put your last marks" | 1 of 2 |
+| 5 | same, as a "first step, every time" | 0 of 2 |
+
+Total $17.5 over 10 conversations (about $1.0 to $1.5 each). Passing run: memory line "Mark goes top left ... they moved
+every mark there in Post A (did in PicPrep, 2026-10-15)" written at Post B, Post C and D top left. The assistant still says
+"First session, so onboarding applies" and "It stands unless you reject it" in most runs: the don't-examples in AGENTS.md
+do not hold it. Conclusion: template wording alone makes it look back about one run in five; the model repeats the sequence
+it used for the first post. Needs the signal where it cannot skip it (the new project's own `view`/`open_project` reply,
+e.g. a line "Post A: you placed marks, they moved them since" across projects).

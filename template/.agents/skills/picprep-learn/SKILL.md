@@ -1,17 +1,26 @@
 ---
 name: picprep-learn
-description: Use after each finished post, when the person corrects or comments on your work, and when they ask what you know about them or say forget that. Decides what is worth remembering and keeps the memory files tidy.
+description: Use first at the start of every request (to read what happened to your earlier changes), after each finished post, when the person corrects or comments on your work, and when they ask what you know about them or say forget that. Decides what is worth remembering and keeps the memory files tidy.
 ---
 
 # Remembering how they work
 
 The point: they should never have to say the same thing twice. Do this quietly. Never ask permission to remember.
 
-## After each post, and when asked
+## At the start of every request, and after each post
 
-Read what they did, not only what they said. `get_outcome` gives what they kept, changed and rejected, and their
-comments; `view {what: "notes"}` gives their notes and rulings on the slides. The stage skills show how to read them.
-Also read what they typed in the chat, and the edits they made to a caption you drafted.
+You are never told a post is finished, so look back yourself, first, before the new work. For every change you proposed
+earlier, in each project you worked on (the new post is another project, so open the earlier ones, not the new one),
+look at `view {what: "project", project}` (your recent changes) or `get_outcome` with its proposalId. A `yoursSince` list on a change means the person
+edited that very thing after you (`/posts/post1/slides/<id>/mark` is the mark on that slide). Then `view` the slide in
+full (`view {what: "project", slide, detail: "full"}`) and see what they put there, and compare it with what you set.
+They said nothing: the edit is the lesson. Their changing your mark, crop, order, caption or setting is a correction
+exactly as much as a sentence would be. Also read the comments in `get_outcome` and `view {what: "notes"}`, what they
+typed in the chat, and the edits they made to a caption you drafted.
+
+Record it before you start the new work. One post done their way is a note under "recent"; the same change on two posts
+is a habit, and goes to `memory/preferences.md` in your next write, and you apply it from then on, to this request too.
+A thing they changed that you cannot see yet (no `yoursSince`) is not a lesson.
 
 ## What is worth keeping
 

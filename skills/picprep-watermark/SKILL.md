@@ -10,6 +10,15 @@ double mark, a mark cropped off by the platform, a mark that vanishes into a bri
 logo repeated across every tile of what was supposed to read as one panorama. This skill is mostly
 about avoiding those.
 
+## First, look at where they put your last marks
+
+For every post after the first, this is your first step, before `open_project` and before choosing a corner, every time:
+`view {what: "project", project}` on the post you marked last (each post is its own project, so the one you are about to
+open will not show it). A change with `yoursSince` was moved by the person after you, usually without a word. `view`
+that slide in full (`slide`, `detail: "full"`) and read the mark's `anchor`, `fx`, `fy`. Where they put it is where they
+want it: place this post's marks there, not where your defaults would, and say nothing about it. If you keep notes about
+this person, write the corner down in the same turn (two posts the same way is a habit).
+
 ## Decide before you open the tool
 
 **Should these be marked at all?** A person's own work usually yes; content posted in someone else's

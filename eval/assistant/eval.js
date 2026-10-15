@@ -100,18 +100,18 @@ async function runOne(name, n) {
         if (!(init.skills || []).some(s => /picprep-onboard/.test(s))) throw new Error('the assistant folder\'s skills were not loaded (skills: ' + JSON.stringify(init.skills) + ')');
         if (!(init.mcp_servers || []).some(s => s.name === 'picprep' && s.status === 'connected')) throw new Error('the connector did not connect: ' + JSON.stringify(init.mcp_servers));
       }
-      const texts = [];
+      const texts = [], tools = [];
       for (const e of r.events) {
         if (e.type === 'assistant') for (const c of e.message.content || []) {
           if (c.type === 'text' && c.text.trim()) { texts.push(c.text.trim()); if (!run.sawPropose) run.questionsBeforeWork += (c.text.match(/\?/g) || []).length; }
-          if (c.type === 'tool_use' && /propose$/.test(c.name)) run.sawPropose = true;
+          if (c.type === 'tool_use') tools.push(c.name.replace(/^mcp__picprep__/, '') + (c.name.endsWith('view') && c.input ? ':' + (c.input.what || '') + (c.input.slide ? '/slide' : '') : '')); if (c.type === 'tool_use' && /propose$/.test(c.name)) run.sawPropose = true;
         }
         if (e.compact_result === 'success') run.compacted = true;
       }
       const result = r.events.find(e => e.type === 'result');
       sid = (result && result.session_id) || (init && init.session_id) || sid;
       run.cost += (result && result.total_cost_usd) || 0; run.claudeTurns += (result && result.num_turns) || 0;
-      run.turns.push({ said: prompt.slice(0, 80), replied: texts.join(' ').slice(0, 200), ended: result ? result.subtype : r.cut ? 'cut' : 'no result: ' + r.err.trim().slice(-200) });
+      run.turns.push({ said: prompt.slice(0, 80), replied: texts.join(' ').slice(0, 200), tools: tools.join(' '), ended: result ? result.subtype : r.cut ? 'cut' : 'no result: ' + r.err.trim().slice(-200) });
       await R.sleep(2000);   // the app saves what it applied
       snaps.push(snapshot(fx));
       if (r.cut) { run.timeout = true; break; }
@@ -245,7 +245,7 @@ async function real() {
     console.log(run.error ? 'ERROR ' + run.error : run.seconds + ' s, ' + run.claudeTurns + ' model turns, $' + run.cost.toFixed(2) + (run.timeout ? ', TIMEOUT' : '') + ', checks ' + run.checks.filter(c => c.ok === true).length + '/' + run.checks.filter(c => c.ok !== null).length);
     for (const c of run.checks) console.log('    ' + (c.ok === true ? 'pass' : c.ok === false ? 'FAIL' : 'info') + '  ' + c.what + ' -- ' + c.why);
     for (const [f, t] of Object.entries(run.memoryAtEnd || {})) console.log('    memory/' + f + ': ' + t.replace(/\n/g, ' / '));
-    for (const t of run.turns || []) console.log('    > ' + t.said + '\n      < ' + t.replied.slice(0, 160) + '  [' + t.ended + ']');
+    for (const t of run.turns || []) console.log('    > ' + t.said + '\n      < ' + t.replied.slice(0, 160) + '  [' + t.ended + ']\n      tools: ' + t.tools);
   }
   console.log('\nTOTAL ' + results.length + ' runs, ' + Math.round((Date.now() - t0) / 1000) + ' s wall, $' + results.reduce((s, r) => s + (r.cost || 0), 0).toFixed(2));
   console.log('INIT ' + JSON.stringify((results.find(r => r.init) || {}).init));
