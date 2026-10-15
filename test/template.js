@@ -21,7 +21,7 @@ const WHEN_NEEDED = ['captions', 'references', 'archive'].map(n => 'memory/' + n
 const SKILLS = ['onboard', 'learn', 'caption', 'feed', 'deliver'].map(n => 'picprep-' + n);
 
 for (const f of [...ALWAYS, ...WHEN_NEEDED, 'memory/sources/.gitkeep', 'CHANGES.md', 'VERSION']) check(fs.existsSync(path.join(tpl, f)), f + ' exists');
-check(read('VERSION') === '2\n', 'VERSION is 2');
+check(read('VERSION') === '3\n', 'VERSION is 3');
 for (const f of [...ALWAYS, ...WHEN_NEEDED]) check(/^<!--[^]*?-->/.test(read(f)), f + ' starts with a comment saying what goes in it');
 
 const imports = read('AGENTS.md').split('\n').filter(l => /^@\S+$/.test(l)).map(l => l.slice(1));
